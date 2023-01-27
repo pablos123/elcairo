@@ -17,7 +17,12 @@ python3 cinecli.py
 Tested in linux mint 21.
 
 # Future
-- [ ] Support other cinemas
-- [ ] Migrate to click framwork 
-- [ ] Make just one print for movie title
+- [ ] Support other cinemas 
+(Si alguien me quiere pasar algún link a un .ics genial, 
+ya pensaré formas de agarrar de otros lados de última, no encontré mucho más)
+
+- [x] Make just one print for movie title
+- [ ] Date sorting
 - [ ] Take a date as parameter yo show only that day, defaulting to today's
+
+- [ ] Migrate to click framework 
