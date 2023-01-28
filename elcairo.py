@@ -55,17 +55,17 @@ def get_date(event_begin: Arrow) -> str:
 class ElCairo:
     """Get El Cairo cinema shows information"""
 
-    def __init__(self, day: str | None, month: str | None, year: str | None):
+    def __init__(self, day: str, month: str, year: str):
         self.set_events(day, month, year)
 
         self.movies: list[Movie] = []
         self.set_movies()
 
-    def set_events(self, day: str | None, month: str | None, year: str | None):
+    def set_events(self, day: str, month: str, year: str):
         """
         Get the events in the given date
         """
-        ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/lista/?tribe-bar-date=2023-01-27&ical=1"
+        ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/lista/?tribe-bar-date={year}-{month}-{day}&ical=1"
         try:
             response = requests.get(ics_url, timeout=10)
             response.raise_for_status()
