@@ -1,28 +1,34 @@
 # cinecli
 
-Just testing, pero siento que va a ser útil.
-
-Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz mierda a fijarme
+Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz de mierda a fijarme
 que es lo que van a pasar, y de paso nunca la entiendo.
 
 El programita lee un archivo .ics y hace cosas, nos vi.
 
+Si alguien me quiere pasar algún link a un .ics de otros cines la mejor,
+ya pensaré formas de agarrar de otros lados de última, no encontré mucho más.
+
 ## Dependencias
-pip install ics icalendar climage requests colorama 
+
+```terminal
+pip install ics icalendar climage requests colorama click
+```
 
 ## Run
 
-python3 cinecli.py
+```terminal
+python3 cinecli.py --help
+```
 
 Tested in linux mint 21.
 
 # Future
-- [ ] Support other cinemas 
-(Si alguien me quiere pasar algún link a un .ics genial, 
-ya pensaré formas de agarrar de otros lados de última, no encontré mucho más)
-
 - [x] Make just one print for movie title
+- [x] Take a date as parameter yo show only that day, defaulting to today's
+- [x] Migrate to click framework 
+- [ ] Error handling for dates without shows. 
+- [ ] Understand a little more of what I'm retrieving with that .ics file
 - [ ] Date sorting
-- [ ] Take a date as parameter yo show only that day, defaulting to today's
-
-- [ ] Migrate to click framework 
+- [ ] More error handling
+- [ ] Testing
+- [ ] Support other cinemas 

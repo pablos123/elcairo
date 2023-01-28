@@ -39,7 +39,7 @@ def modify_info_url(info_url: str | None) -> str:
     """
     Modify the url of the event to have consistency
     """
-    return re.sub(r"d+-d+-d+/(:?d+/)?$", "", info_url)
+    return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", info_url)
 
 
 def get_date(event_begin: Arrow) -> str:
@@ -65,7 +65,7 @@ class ElCairo:
         """
         Get the events in the given date
         """
-        ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/mes/?tribe-bar-date={year}-{month}-{day}&ical=1&tribe_display=month"
+        ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/lista/?tribe-bar-date=2023-01-27&ical=1"
         try:
             response = requests.get(ics_url, timeout=10)
             response.raise_for_status()
