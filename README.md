@@ -36,11 +36,11 @@ Cada cine tendrá su API, cada API, cuando se consulten, devolverá un json del 
   <otros eventos>
 }
 ```
-En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página
-De otros cines no encontré nada todavía de esa índole.
+En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
+De otros cines todavía no encontré nada parecido.
 Tal vez use un crawler en algún momento con algúno para ver que onda y vea si puedo resolver algo.
 
-Si alguien encuentra algo de .ics de otros cines la mejor.
+Si alguien encuentra algún archivo .ics de otros cines la mejor.
 
 
 # Future
