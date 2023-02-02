@@ -31,14 +31,14 @@ Cada cine tendrá su API, cada API, cuando se consulten, devolverá un json del 
     "begin": "02-02-2023 20:30:00 (en 19 horas)",
     "url": "https://<sarasa>",
     "image_url": "https://<sarasa>"
-  }
+  },
   ...
   <otros eventos>
 }
 ```
 En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
 De otros cines todavía no encontré nada parecido.
-Tal vez use un crawler en algún momento con algúno para ver que onda y vea si puedo resolver algo.
+Tal vez use un crawler en algún momento con alguno para ver que onda y vea si puedo resolver algo.
 
 Si alguien encuentra algún archivo .ics de otros cines la mejor.
 
