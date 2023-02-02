@@ -7,8 +7,6 @@ import click
 from apis.elcairo import ElCairo
 from commands.lib.movie_printer import MoviePrinter
 
-printer = MoviePrinter()
-
 
 @click.group()
 @click.pass_context
@@ -16,6 +14,7 @@ def elcairo(ctx) -> None:
     """
     Print El Cairo movie shows.
     """
+    ctx.obj["printer"] = MoviePrinter(show_images=ctx.obj["show_images"])
 
 
 @elcairo.command()
@@ -28,7 +27,7 @@ def today(ctx) -> None:
     elcairo_obj = ElCairo()
     todays_json = elcairo_obj.get_todays_shows_json()
 
-    printer.echo_list(todays_json, ctx.obj["images"])
+    ctx.obj["printer"].echo_list(todays_json)
 
 
 @elcairo.command()
@@ -41,7 +40,7 @@ def upcoming(ctx) -> None:
     elcairo_obj = ElCairo()
     upcoming_json = elcairo_obj.get_upcoming_shows_json()
 
-    printer.echo_list(upcoming_json, ctx.obj["images"])
+    ctx.obj["printer"].echo_list(upcoming_json)
 
 
 @elcairo.command()
@@ -56,7 +55,7 @@ def day(ctx, date) -> None:
     date_json = elcairo_obj.get_date_shows_json(
         date.year, date.month, date.day)
 
-    printer.echo_list(date_json, ctx.obj["images"])
+    ctx.obj["printer"].echo_list(date_json)
 
 
 @elcairo.command()
@@ -71,4 +70,4 @@ def until(ctx, date) -> None:
     until_json = elcairo_obj.get_until_date_shows_json(
         date.year, date.month, date.day)
 
-    printer.echo_list(until_json, ctx.obj["images"])
+    ctx.obj["printer"].echo_list(until_json)

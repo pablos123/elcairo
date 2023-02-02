@@ -16,7 +16,10 @@ class MoviePrinter:
     Movie printing utilities for echoing with click.
     """
 
-    def echo_list(self, movies_json: str, show_image: bool) -> None:
+    def __init__(self, show_images: bool):
+        self.show_images = show_images
+
+    def echo_list(self, movies_json: str) -> None:
         """
         Print a list of movies
         """
@@ -24,17 +27,23 @@ class MoviePrinter:
         movies: dict = json.loads(movies_json)
 
         for uid in movies.keys():
+
             movie = movies[uid]
+
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
+
             click.echo(
                 f"{Style.BRIGHT}{Fore.GREEN}Nombre: {Style.RESET_ALL}{Style.BRIGHT}{movie['name']}{Style.RESET_ALL}\n"
             )
-            if show_image:
+
+            if self.show_images:
                 self.echo_image(movie["image_url"], uid)
 
             click.echo(f"{Fore.RED}Fecha:{Style.RESET_ALL} {movie['begin']}")
+
             click.echo(
                 f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}")
+
             click.echo(
                 f"\n{Fore.YELLOW}Todas las funciones:{Style.RESET_ALL} {self.modify_url(movie['url'])}\n"
             )

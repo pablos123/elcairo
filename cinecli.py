@@ -5,15 +5,13 @@ from commands.elcairo import elcairo
 
 
 @click.group()
-@click.option(
-    "--images", help="Show images.", type=bool, default=True, show_default=True
-)
+@click.option("--show_images", help="Show images.", is_flag=True)
 @click.pass_context
-def cinecli(ctx, images):
+def cinecli(ctx, show_images):
     """
     Command line interface for Rosario's cinemas shows information.
     """
-    ctx.obj["images"] = images
+    ctx.obj["show_images"] = show_images
 
 
 cinecli.add_command(elcairo)
