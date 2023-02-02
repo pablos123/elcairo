@@ -54,4 +54,4 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 - [X] Error handling for dates without shows.
 - [X] Understand a little more of what I'm retrieving with that .ics file
 - [X] Date sorting
-- [X] Crawl the info url to get more information in the API, e.g the duration of the film
+- [ ] Crawl the info url to get more information in the API, e.g the duration of the film
