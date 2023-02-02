@@ -6,7 +6,7 @@ que es lo que van a pasar, y de paso nunca la entiendo.
 ## Dependencias
 
 ```terminal
-pip install ics icalendar climage requests colorama click
+pip install ics icalendar climage requests colorama click arrow
 ```
 
 ## Run
@@ -53,5 +53,6 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 ## ElCairo
 - [X] Error handling for dates without shows.
 - [X] Understand a little more of what I'm retrieving with that .ics file
-- [X] Date sorting
+- [X] Date sorting (The closest to `now` is returned last)
+- [ ] Another type of view: show a list of movies with the shows instead of all the movie shows. 
 - [ ] Crawl the info url to get more information in the API, e.g the duration of the film

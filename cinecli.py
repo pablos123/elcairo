@@ -1,7 +1,4 @@
 """Print Rosario's cinemas shows information"""
-
-from datetime import date
-
 import click
 
 from commands.elcairo import elcairo

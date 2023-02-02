@@ -32,16 +32,19 @@ class MoviePrinter:
             if show_image:
                 self.echo_image(movie["image_url"], uid)
 
-            click.echo(f"{Fore.RED}Fecha:{Style.RESET_ALL} {movie['begin']}\n")
+            click.echo(f"{Fore.RED}Fecha:{Style.RESET_ALL} {movie['begin']}")
             click.echo(
-                f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}\n")
+                f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}")
             click.echo(
                 f"\n{Fore.YELLOW}Todas las funciones:{Style.RESET_ALL} {self.modify_url(movie['url'])}\n"
             )
 
     @staticmethod
     def echo_image(url: str, uid: str) -> None:
-        """Creates a temporal file reads it and print the image through click.echo."""
+        """
+        Creates a temporal file reads it and
+        print the image through click.echo.
+        """
         output: str = ""
         try:
             response = requests.get(url, stream=True, timeout=10)

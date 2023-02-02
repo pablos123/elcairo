@@ -6,6 +6,7 @@ import json
 import re
 from typing import Container, Match, Set
 
+import arrow
 import requests
 from ics import Calendar, Event
 from ics.utils import Arrow
@@ -18,7 +19,7 @@ class ElCairo:
 
     def events_to_json(self, events: Set[Event]) -> str:
         """
-        Returns a json of events. The closest first.
+        Returns a json of events. The latest first.
         """
 
         events_dict: dict = {}
@@ -51,16 +52,15 @@ class ElCairo:
         Get todays movie shows events. The events are not sorted.
         """
 
-        now = Arrow.now()
+        now: Arrow = Arrow.now()
 
-        year, month = (now.year, now.month)
+        current_events: Set[Event] = self.fetch_events(
+            str(now.year).zfill(4), str(now.month).zfill(2)
+        )
 
-        current_events = self.fetch_events(
-            str(year).zfill(4), str(month).zfill(2))
-
-        todays_events = set()
+        todays_events: Set[Event] = set()
         for event in current_events:
-            if event.begin.day == now.day and event.begin.month == now.month:
+            if event.begin.format("MM-DD") == now.format("MM-DD"):
                 todays_events.add(event)
 
         return todays_events
@@ -70,16 +70,17 @@ class ElCairo:
         Get upcoming movie shows events. The events are not sorted.
         """
 
-        now = Arrow.now()
+        now: Arrow = Arrow.now()
 
         year, month = (now.year, now.month)
 
-        upcoming_events: Set = set()
-        current_events = self.fetch_events(
-            str(year).zfill(4), str(month).zfill(2))
+        upcoming_events: Set[Event] = set()
+        current_events: Set[Event] = self.fetch_events(
+            str(year).zfill(4), str(month).zfill(2)
+        )
         while current_events != set():
 
-            current_upcoming_events = set()
+            current_upcoming_events: Set[Event] = set()
             for event in current_events:
                 if event.begin >= now:
                     current_upcoming_events.add(event)
@@ -101,20 +102,21 @@ class ElCairo:
         Get past movie shows events. The events are not sorted.
         """
 
-        now = Arrow.now()
+        now: Arrow = Arrow.now()
 
         year, month = (now.year, now.month)
 
-        past_events: Set = set()
-        current_events = self.fetch_events(
-            str(year).zfill(4), str(month).zfill(2))
+        past_events: Set[Event] = set()
+        current_events: Set[Event] = self.fetch_events(
+            str(year).zfill(4), str(month).zfill(2)
+        )
         while current_events != set():
             if month == 1:
                 month = 13
                 year -= 1
             month -= 1
 
-            current_past_events = set()
+            current_past_events: Set[Event] = set()
             for event in current_events:
                 if event.begin <= now:
                     current_past_events.add(event)
@@ -126,27 +128,50 @@ class ElCairo:
 
         return past_events
 
-    def get_date_shows_event(self, year: str, month: str, day: str) -> Set[Event]:
+    def get_date_shows_event(
+        self, year: str | int, month: str | int, day: str | int
+    ) -> Set[Event]:
         """
-        Get shows events of a given date. The events are not sorted.
+        Get movie shows events of a given date. The events are not sorted.
         """
 
-        year = str(year).zfill(4)
-        month = str(month).zfill(2)
-        day = str(day).zfill(2)
+        year: str = str(year).zfill(4)
+        month: str = str(month).zfill(2)
+        day: str = str(day).zfill(2)
 
-        current_events = self.fetch_events(year, month)
+        given_date: Arrow = arrow.get(
+            f"{year}-{month}-{day}").format("YYYY-MM-DD")
 
-        date_events = set()
+        current_events: Set[Event] = self.fetch_events(year, month)
+
+        date_events: Set[Event] = set()
         for event in current_events:
-            if (
-                str(event.begin.day).zfill(2) == day
-                and str(event.begin.month).zfill(2) == month
-                and str(event.begin.year).zfill(4) == year
-            ):
+            if event.begin.format("YYYY-MM-DD") == given_date:
                 date_events.add(event)
 
         return date_events
+
+    def get_until_date_shows_event(
+        self, year: str | int, month: str | int, day: str | int
+    ) -> str:
+        """
+        Get movie shows events until a given date. The events are not sorted.
+        """
+
+        year: str = str(year).zfill(4)
+        month: str = str(month).zfill(2)
+        day: str = str(day).zfill(2)
+
+        given_date: Arrow = arrow.get(
+            f"{year}-{month}-{day}").format("YYYY-MM-DD")
+
+        upcoming_events: Set[Event] = self.get_upcoming_shows_event()
+        until_date_events: Set[Event] = set()
+        for event in upcoming_events:
+            if event.begin.format("YYYY-MM-DD") <= given_date:
+                until_date_events.add(event)
+
+        return until_date_events
 
     def get_all_shows_event(self) -> Set[Event]:
         """
@@ -160,35 +185,52 @@ class ElCairo:
 
     def get_todays_shows_json(self):
         """
-        Get todays movie shows events as json. The events are sorted by date, the closest first.
+        Get todays movie shows events as json.
+        The events are sorted by date, the latest first.
         """
         todays_events = self.get_todays_shows_event()
         return self.events_to_json(todays_events)
 
     def get_upcoming_shows_json(self) -> str:
         """
-        Get upcoming movie shows events as json. The events are sorted by date, the closest first.
+        Get upcoming movie shows events as json.
+        The events are sorted by date, the latest first.
         """
         upcoming_events = self.get_upcoming_shows_event()
         return self.events_to_json(upcoming_events)
 
     def get_past_shows_json(self) -> str:
         """
-        Get past movie shows events. The events are sorted by date, the closest first.
+        Get past movie shows events.
+        The events are sorted by date, the latest first.
         """
         past_events = self.get_past_shows_event()
         return self.events_to_json(past_events)
 
-    def get_date_shows_json(self, year: str, month: str, day: str) -> str:
+    def get_date_shows_json(
+        self, year: str | int, month: str | int, day: str | int
+    ) -> str:
         """
-        Get shows events of a given date as json. The events are sorted by date, the closest first.
+        Get movie shows of a given date as json.
+        The events are sorted by date, the latest first.
         """
         date_events = self.get_date_shows_event(year, month, day)
         return self.events_to_json(date_events)
 
+    def get_until_date_shows_json(
+        self, year: str | int, month: str | int, day: str | int
+    ) -> str:
+        """
+        Get movie shows until a given date.
+        The events are sorted by date, the latest first.
+        """
+        until_date_events = self.get_until_date_shows_event(year, month, day)
+        return self.events_to_json(until_date_events)
+
     def get_all_shows_json(self) -> str:
         """
-        Get all shows events. The events are sorted by date, the closest first.
+        Get all movie shows events.
+        The events are sorted by date, the latest first.
         """
         all_events = self.get_all_shows_event()
         return self.events_to_json(all_events)
@@ -204,7 +246,8 @@ class ElCairo:
             """
             Check if the extra info of a 'cairo' type event
             is a 'file' and if the mime type is correct.
-            The regex is based on the information I saw in some of the El Cairo's .ics
+            The regex is based on the information
+            I saw in some of the El Cairo's .ics
             """
             return re.search("^ATTACH;FMTTYPE=image/(:?jpeg|png|webp)$", mime)
 

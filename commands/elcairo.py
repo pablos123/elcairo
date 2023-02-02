@@ -42,3 +42,33 @@ def upcoming(ctx) -> None:
     upcoming_json = elcairo_obj.get_upcoming_shows_json()
 
     printer.echo_list(upcoming_json, ctx.obj["images"])
+
+
+@elcairo.command()
+@click.option("--date", type=click.DateTime(formats=["%d-%m-%Y"]), required=True)
+@click.pass_context
+def day(ctx, date) -> None:
+    """
+    Print movie shows of a given date.
+    """
+
+    elcairo_obj = ElCairo()
+    date_json = elcairo_obj.get_date_shows_json(
+        date.year, date.month, date.day)
+
+    printer.echo_list(date_json, ctx.obj["images"])
+
+
+@elcairo.command()
+@click.option("--date", type=click.DateTime(formats=["%d-%m-%Y"]), required=True)
+@click.pass_context
+def until(ctx, date) -> None:
+    """
+    Print movie shows until a given date.
+    """
+
+    elcairo_obj = ElCairo()
+    until_json = elcairo_obj.get_until_date_shows_json(
+        date.year, date.month, date.day)
+
+    printer.echo_list(until_json, ctx.obj["images"])
