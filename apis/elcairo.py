@@ -4,7 +4,7 @@ Cine El Cairo API
 
 import json
 import re
-from typing import Any, Container, Match, Set
+from typing import Container, Match, Set
 
 import requests
 from ics import Calendar, Event
@@ -30,7 +30,7 @@ class ElCairo:
 
             parsed_dict["begin"] = self.get_date(event.begin)
 
-            # El Cairo events does not have an end `date`,
+            # El Cairo events does not have an `end` date,
             # is always the same as the `begin` date.
             # parsed_dict["end"] = event.end.format("DD-MM-YYYY HH:mm:ss")
 
@@ -193,7 +193,6 @@ class ElCairo:
         all_events = self.get_all_shows_event()
         return self.events_to_json(all_events)
 
-    # Parsers or similar
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:
         """
@@ -215,13 +214,6 @@ class ElCairo:
             if check_mime(splitted_item_str[0]):
                 image_url = splitted_item_str[1] + ":" + splitted_item_str[2]
         return image_url
-
-    @staticmethod
-    def modify_info_url(info_url: Any) -> Any:
-        """
-        Modify the url of the event to have consistency
-        """
-        return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", info_url)
 
     @staticmethod
     def get_date(event_begin: Arrow) -> str:
