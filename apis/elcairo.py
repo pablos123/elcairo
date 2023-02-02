@@ -135,9 +135,9 @@ class ElCairo:
         Get movie shows events of a given date. The events are not sorted.
         """
 
-        year: str = str(year).zfill(4)
-        month: str = str(month).zfill(2)
-        day: str = str(day).zfill(2)
+        year = str(year).zfill(4)
+        month = str(month).zfill(2)
+        day = str(day).zfill(2)
 
         given_date: Arrow = arrow.get(
             f"{year}-{month}-{day}").format("YYYY-MM-DD")
@@ -153,14 +153,14 @@ class ElCairo:
 
     def get_until_date_shows_event(
         self, year: str | int, month: str | int, day: str | int
-    ) -> str:
+    ) -> Set[Event]:
         """
         Get movie shows events until a given date. The events are not sorted.
         """
 
-        year: str = str(year).zfill(4)
-        month: str = str(month).zfill(2)
-        day: str = str(day).zfill(2)
+        year = str(year).zfill(4)
+        month = str(month).zfill(2)
+        day = str(day).zfill(2)
 
         given_date: Arrow = arrow.get(
             f"{year}-{month}-{day}").format("YYYY-MM-DD")
