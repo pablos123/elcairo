@@ -8,8 +8,8 @@ from typing import Container, Match, Set
 
 import arrow
 import requests
+from arrow import Arrow
 from ics import Calendar, Event
-from ics.utils import Arrow
 
 
 class ElCairo:
@@ -52,7 +52,7 @@ class ElCairo:
         Get todays movie shows events. The events are not sorted.
         """
 
-        now: Arrow = Arrow.now()
+        now: Arrow = arrow.now()
 
         current_events: Set[Event] = self.fetch_events(
             str(now.year).zfill(4), str(now.month).zfill(2)
@@ -70,7 +70,7 @@ class ElCairo:
         Get upcoming movie shows events. The events are not sorted.
         """
 
-        now: Arrow = Arrow.now()
+        now: Arrow = arrow.now()
 
         year, month = (now.year, now.month)
 
@@ -102,7 +102,7 @@ class ElCairo:
         Get past movie shows events. The events are not sorted.
         """
 
-        now: Arrow = Arrow.now()
+        now: Arrow = arrow.now()
 
         year, month = (now.year, now.month)
 
@@ -139,7 +139,7 @@ class ElCairo:
         month = str(month).zfill(2)
         day = str(day).zfill(2)
 
-        given_date: Arrow = arrow.get(
+        given_date: str = arrow.get(
             f"{year}-{month}-{day}").format("YYYY-MM-DD")
 
         current_events: Set[Event] = self.fetch_events(year, month)
@@ -162,7 +162,7 @@ class ElCairo:
         month = str(month).zfill(2)
         day = str(day).zfill(2)
 
-        given_date: Arrow = arrow.get(
+        given_date: str = arrow.get(
             f"{year}-{month}-{day}").format("YYYY-MM-DD")
 
         upcoming_events: Set[Event] = self.get_upcoming_shows_event()
