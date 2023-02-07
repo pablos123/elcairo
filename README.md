@@ -20,7 +20,7 @@ Tested in linux mint 21. (python 3.10.6)
 ## More info
 Cada cine es un comando y un grupo de comandos de click.
 
-Cada cine tendrá su API, cada API, cuando se consulten, devolverá un json del tipo:
+Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del tipo:
 
 ```terminal
 {
@@ -101,14 +101,9 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 # Screenshots
 
 ```terminal
-python3 cinecli.py --images elcairo day --date 09-02-2023
+python3 cinecli.py --urls --images elcairo upcoming
 ```
-![scrotFeb07021701](https://user-images.githubusercontent.com/52180403/217154847-96c0583c-9356-4e2d-bf7d-cbb785666479.png)
-
-```terminal
-python3 cinecli.py --urls --no_extra_info elcairo upcoming
-```
-![scrotFeb07021901](https://user-images.githubusercontent.com/52180403/217155123-2cce5075-0047-483f-bf32-f329959552da.png)
+![scrotFeb07193215](https://user-images.githubusercontent.com/52180403/217381710-9058e282-6213-42d6-82f3-16e1b4fecaea.png)
 
 # Future
 ## General
