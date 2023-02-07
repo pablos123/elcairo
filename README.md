@@ -22,7 +22,7 @@ Cada cine es un comando y un grupo de comandos de click.
 
 Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del tipo:
 
-```terminal json
+```json
 {
   "<movie/event identified>": {
     "name": "<name of the movie>",
@@ -48,7 +48,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 ```
 
 ### Example
-```terminal json
+```json
 {
   "14896-1676068200-1676068200@elcairocinepublico.gob.ar": {
     "name": "AFTERSUN",
