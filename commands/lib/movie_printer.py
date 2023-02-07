@@ -46,13 +46,15 @@ class MoviePrinter:
                 click.echo()
                 self.echo_image(movie["image_url"], uid)
 
-            click.echo()
-
             if not self.no_extra_info:
+                click.echo()
                 self.echo_extra_info(movie["extra_info"])
 
             if self.urls:
+                click.echo()
                 self.echo_urls(movie["urls"])
+
+            click.echo()
 
     @staticmethod
     def echo_extra_info(extra_info: dict) -> None:
@@ -113,7 +115,7 @@ class MoviePrinter:
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
 
         cost: str = extra_info["cost"].strip().replace("\n", " ")
-        click.echo(f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(cost)}\n")
+        click.echo(f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(cost)}")
 
     @staticmethod
     def echo_image(url: str, uid: str) -> None:
@@ -137,7 +139,7 @@ class MoviePrinter:
             requests.exceptions.RequestException,
             OSError,
         ) as _:
-            output = "[Cannot show image...]\n"
+            output = "[Cannot show image...]"
 
         click.echo(output)
 
