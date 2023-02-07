@@ -152,7 +152,7 @@ python3 cinecli.py --urls --images elcairo upcoming
 ## Showcase
 - [ ] Crawl tf out.
 
-## Arte
+## Arteón
 - [ ] Crawl tf out.
 
 ## Monumental
