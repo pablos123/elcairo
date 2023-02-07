@@ -14,7 +14,11 @@ def elcairo(ctx) -> None:
     """
     Print El Cairo movie shows.
     """
-    ctx.obj["printer"] = MoviePrinter(show_images=ctx.obj["show_images"])
+    ctx.obj["printer"] = MoviePrinter(
+        images=ctx.obj["images"],
+        no_extra_info=ctx.obj["no_extra_info"],
+        urls=ctx.obj["urls"],
+    )
 
 
 @elcairo.command()

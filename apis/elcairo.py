@@ -9,6 +9,7 @@ from typing import Container, Match, Set
 import arrow
 import requests
 from arrow import Arrow
+from bs4 import BeautifulSoup, Tag
 from ics import Calendar, Event
 
 
@@ -19,7 +20,8 @@ class ElCairo:
 
     def events_to_json(self, events: Set[Event]) -> str:
         """
-        Returns a json of events. The latest first.
+        Returns a json of events. The latest first. This method crawls for
+        more info in the specified event url.
         """
 
         events_dict: dict = {}
@@ -36,6 +38,9 @@ class ElCairo:
             # parsed_dict["end"] = event.end.format("DD-MM-YYYY HH:mm:ss")
 
             parsed_dict["url"] = event.url
+
+            if event.url:
+                parsed_dict["extra_info"] = self.get_extra_info(event.url)
 
             parsed_dict["image_url"] = self.get_image(event.extra)
 
@@ -79,7 +84,6 @@ class ElCairo:
             str(year).zfill(4), str(month).zfill(2)
         )
         while current_events != set():
-
             current_upcoming_events: Set[Event] = set()
             for event in current_events:
                 if event.begin >= now:
@@ -234,6 +238,56 @@ class ElCairo:
         """
         all_events = self.get_all_shows_event()
         return self.events_to_json(all_events)
+
+    @staticmethod
+    def get_extra_info(url: str) -> dict:
+        """
+        Get the extra info inside a El Cairo's url.
+        """
+
+        extra_info: dict = {}
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+        except (
+            requests.exceptions.HTTPError,
+            requests.exceptions.Timeout,
+            requests.exceptions.TooManyRedirects,
+            requests.exceptions.RequestException,
+        ) as _:
+            # It's not important if I cannot get some of the info.
+            extra_info["failed"] = "[Error fetching extra info...]"
+            return extra_info
+
+        response_html: str = response.text
+
+        soup = BeautifulSoup(response_html, "html.parser")
+
+        sinopsis: str = "[Nothing to show...]"
+        sinopsis_elem: Tag | None = soup.select_one(".sinopsis-online")
+        if sinopsis_elem is not None and sinopsis_elem.find("p") is not None:
+            sinopsis = sinopsis_elem.find("p").text
+        extra_info["sinopsis"] = sinopsis
+
+        ficha_tecnica: dict = {}
+        ficha_tecnica_elem: Tag | None = soup.select_one(
+            ".ficha-tecnica-online")
+        if ficha_tecnica_elem is not None:
+            ficha_tecnica_data = ficha_tecnica_elem.text.split("\n")
+            for data in ficha_tecnica_data:
+                if re.match(r"^\w+: .*$", data):
+                    splitted_data: list[str] = data.split(":")
+                    ficha_tecnica[splitted_data[0]] = splitted_data[1]
+
+        extra_info["ficha_tecnica"] = ficha_tecnica
+
+        valor_entrada: str = "[Nothing to show...]"
+        valor_entrada_elem = soup.select_one(".informacion-entradas")
+        if valor_entrada_elem is not None and valor_entrada_elem.find("p") is not None:
+            valor_entrada = valor_entrada_elem.find("p").text
+        extra_info["valor_entrada"] = valor_entrada
+
+        return extra_info
 
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:
