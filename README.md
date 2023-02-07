@@ -24,7 +24,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 
 ```json
 {
-  "<movie/event identified>": {
+  "<movie/event identifier>": {
     "name": "<name of the movie>",
     "begin": "<string that shows when the movie start>",
     "urls": [ "<list of urls for more info>", "<url1>" ],
