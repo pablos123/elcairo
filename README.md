@@ -22,7 +22,33 @@ Cada cine es un comando y un grupo de comandos de click.
 
 Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del tipo:
 
-```terminal
+```terminal json
+{
+  "<movie/event identified>": {
+    "name": "<name of the movie>",
+    "begin": "<string that shows when the movie start>",
+    "urls": [ "<list of urls for more info>", "<url1>" ],
+    "extra_info": {
+      "synopsis": "<movie synopsis>",
+      "data": {
+        "director": "<director>",
+        "cast": "<cast>",
+        "genre": "<genre>",
+        "duration": "<duration>",
+        "origin": "<origin>",
+        "year": "<year>",
+        "age": "<age restriction>"
+      },
+      "cost": "<cost>"
+    },
+    "image_url": "<image url to render it in the terminal>"
+  },
+  <more events>
+}
+```
+
+### Example
+```terminal json
 {
   "14896-1676068200-1676068200@elcairocinepublico.gob.ar": {
     "name": "AFTERSUN",
@@ -122,3 +148,6 @@ python3 cinecli.py --urls --images elcairo upcoming
 - [X] Understand a little more of what I'm retrieving with that .ics file.
 - [X] Date sorting (Default: closest shows last).
 - [X] Crawl the info url to get more information in the API, e.g the duration of the film.
+
+## Showcase
+- [ ] Crawl tf out.
