@@ -53,20 +53,29 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 
 # Screenshots
 
-![scrotFeb07012106](https://user-images.githubusercontent.com/52180403/217148297-d6b9bf08-8bab-4ff9-89db-151feb8a8f19.png)
+```terminal
+python3 cinecli.py --images elcairo day --date 09-02-2023
+```
+![scrotFeb07021701](https://user-images.githubusercontent.com/52180403/217154847-96c0583c-9356-4e2d-bf7d-cbb785666479.png)
+
+```terminal
+python3 cinecli.py --urls --no_extra_info elcairo upcoming
+```
+![scrotFeb07021901](https://user-images.githubusercontent.com/52180403/217155123-2cce5075-0047-483f-bf32-f329959552da.png)
 
 # Future
 ## General
-- [X] Migrate to click framework
+- [X] Migrate to click framework.
 - [X] Review the view. I'm not quite satisfied with this one.
 - [ ] Populate a sqlite db, fetching the .ics files takes too long.
 - [ ] Testing, Error handling.
 - [ ] Support notifications.
+- [ ] List movies in diferent order.
 - [ ] Decide how to 'Standarize' the data in the extra info.
-- [ ] Support other cinemas
+- [ ] Support other cinemas.
 
 ## ElCairo
 - [X] Error handling for dates without shows.
-- [X] Understand a little more of what I'm retrieving with that .ics file
-- [X] Date sorting (The closest to `now` is returned last)
-- [X] Crawl the info url to get more information in the API, e.g the duration of the film
+- [X] Understand a little more of what I'm retrieving with that .ics file.
+- [X] Date sorting (The closest to `now` is returned last).
+- [X] Crawl the info url to get more information in the API, e.g the duration of the film.
