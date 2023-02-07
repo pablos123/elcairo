@@ -282,7 +282,7 @@ class ElCairo:
         extra_info["ficha_tecnica"] = ficha_tecnica
 
         valor_entrada: str = "[Nothing to show...]"
-        valor_entrada_elem = soup.select_one(".informacion-entradas")
+        valor_entrada_elem: Tag | None = soup.select_one(".informacion-entradas")
         if valor_entrada_elem is not None and valor_entrada_elem.find("p") is not None:
             valor_entrada = valor_entrada_elem.find("p").text
         extra_info["valor_entrada"] = valor_entrada

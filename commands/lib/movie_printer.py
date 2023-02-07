@@ -1,5 +1,6 @@
 """An event is always a movie in this program"""
 import json
+import os
 import re
 import shutil
 from typing import Any
@@ -32,15 +33,20 @@ class MoviePrinter:
 
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
+            name: str = movie["name"]
+            if name == 0:
+                name = "[No name...]"
+
+            begin: str = movie["begin"]
+            if begin == 0:
+                begin = "[No beginning...]"
+
             click.echo(
-                f"{Style.BRIGHT}{Fore.GREEN}Nombre: {Style.RESET_ALL}{Style.BRIGHT}{movie['name']}{Style.RESET_ALL}"
-            )
+                f"{Style.BRIGHT}{Style.BRIGHT}{name}{Style.RESET_ALL}   {begin}")
 
             if self.images:
                 click.echo()
                 self.echo_image(movie["image_url"], uid)
-
-            click.echo(f"{Fore.GREEN}Fecha:{Style.RESET_ALL} {movie['begin']}")
 
             click.echo()
 
@@ -49,12 +55,11 @@ class MoviePrinter:
 
             if self.urls:
                 click.echo(
-                    f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}")
+                    f"{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}")
 
                 click.echo(
-                    f"\n{Fore.YELLOW}Todas las funciones:{Style.RESET_ALL} {self.modify_url(movie['url'])}\n"
+                    f"{Fore.YELLOW}Todas las funciones:{Style.RESET_ALL} {self.modify_url(movie['url'])}\n"
                 )
-                click.echo()
 
     @staticmethod
     def echo_extra_info(extra_info: dict) -> None:
@@ -71,7 +76,7 @@ class MoviePrinter:
             Truncate a string to only be 80 characters long.
             """
             if len(string) <= 80:
-                return string
+                return string.strip()
 
             out: str = ""
             lines: list[str] = [string[i: i + 80]
@@ -81,29 +86,30 @@ class MoviePrinter:
 
             return out.strip()
 
-        click.echo(f"{Fore.GREEN}Sinopsis:{Style.RESET_ALL}")
-        click.echo(truncate(extra_info["sinopsis"]))
-        click.echo()
+        # Sinopsis
+        click.echo(
+            f"{Style.DIM}{truncate(extra_info['sinopsis'])}{Style.RESET_ALL}\n")
 
-        click.echo(f"{Fore.GREEN}Ficha tecnica:{Style.RESET_ALL}")
+        # Extra info
+        click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}")
         for key in extra_info["ficha_tecnica"].keys():
-            if len(extra_info["ficha_tecnica"][key]) + len(key) > 80:
+            value = extra_info["ficha_tecnica"][key]
+            if len(value) + len(key) > 80:
                 click.echo(
-                    f"{Fore.YELLOW}{key}:{Style.RESET_ALL}\n{truncate(extra_info['ficha_tecnica'][key])}"
+                    f"{Fore.YELLOW}{key.capitalize()}:{Style.RESET_ALL}\n{truncate(value)}"
                 )
                 continue
 
             click.echo(
-                f"{Fore.YELLOW}{key}:{Style.RESET_ALL}{truncate(extra_info['ficha_tecnica'][key])}"
+                f"{Fore.YELLOW}{key.capitalize()}: {Style.RESET_ALL}{truncate(value)}"
             )
+        click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
 
-        click.echo()
-        valor_entrada = extra_info["valor_entrada"].strip().replace("\n", " ")
+        # Valor
+        valor_entrada: str = extra_info["valor_entrada"].strip().replace(
+            "\n", " ")
         click.echo(
-            f"{Fore.GREEN}Valor entrada:{Style.RESET_ALL} {truncate(valor_entrada)}"
-        )
-
-        click.echo()
+            f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(valor_entrada)}\n")
 
     @staticmethod
     def echo_image(url: str, uid: str) -> None:
@@ -119,6 +125,7 @@ class MoviePrinter:
             with open(file_name, "wb") as image_file:
                 shutil.copyfileobj(response.raw, image_file)
                 output = climage.convert(file_name)
+            os.remove(file_name)
         except (
             requests.exceptions.HTTPError,
             requests.exceptions.Timeout,

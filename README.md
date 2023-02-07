@@ -55,8 +55,11 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 # Future
 ## General
 - [X] Migrate to click framework
+- [X] Review the view. I'm not quite satisfied with this one.
 - [ ] Populate a sqlite db, fetching the .ics files takes too long.
-- [ ] Testing
+- [ ] Testing, Error handling.
+- [ ] Support notifications.
+- [ ] Decide how to 'Standarize' the data in the extra info.
 - [ ] Support other cinemas
 
 ## ElCairo
@@ -64,4 +67,3 @@ Si alguien encuentra algún archivo .ics de otros cines la mejor.
 - [X] Understand a little more of what I'm retrieving with that .ics file
 - [X] Date sorting (The closest to `now` is returned last)
 - [X] Crawl the info url to get more information in the API, e.g the duration of the film
-- [ ] Review the view. I'm not quite satisfied with this one.
