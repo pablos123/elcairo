@@ -6,7 +6,7 @@ que es lo que van a pasar, y de paso nunca la entiendo.
 ## Dependencias
 
 ```terminal
-pip install ics icalendar climage requests colorama click arrow  beautifulsoup4
+pip install ics icalendar climage requests colorama click arrow beautifulsoup4
 ```
 
 ## Run
@@ -51,6 +51,9 @@ Tal vez use un crawler en algún momento con alguno para ver que onda y vea si p
 
 Si alguien encuentra algún archivo .ics de otros cines la mejor.
 
+# Screenshots
+
+![scrotFeb07012106](https://user-images.githubusercontent.com/52180403/217148297-d6b9bf08-8bab-4ff9-89db-151feb8a8f19.png)
 
 # Future
 ## General
