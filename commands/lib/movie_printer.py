@@ -1,9 +1,7 @@
 """An event is always a movie in this program"""
 import json
 import os
-import re
 import shutil
-from typing import Any
 
 import click
 import climage
@@ -34,11 +32,11 @@ class MoviePrinter:
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
             name: str = movie["name"]
-            if name == 0:
+            if name == "":
                 name = "[No name...]"
 
             begin: str = movie["begin"]
-            if begin == 0:
+            if begin == "":
                 begin = "[No beginning...]"
 
             click.echo(
@@ -54,17 +52,12 @@ class MoviePrinter:
                 self.echo_extra_info(movie["extra_info"])
 
             if self.urls:
-                click.echo(
-                    f"{Fore.YELLOW}Más info:{Style.RESET_ALL} {movie['url']}")
-
-                click.echo(
-                    f"{Fore.YELLOW}Todas las funciones:{Style.RESET_ALL} {self.modify_url(movie['url'])}\n"
-                )
+                self.echo_urls(movie["urls"])
 
     @staticmethod
     def echo_extra_info(extra_info: dict) -> None:
         """
-        Show extra info. Ficha tecnica is a dict.
+        Show extra info.
         """
 
         if "failed" in extra_info:
@@ -86,30 +79,41 @@ class MoviePrinter:
 
             return out.strip()
 
-        # Sinopsis
         click.echo(
-            f"{Style.DIM}{truncate(extra_info['sinopsis'])}{Style.RESET_ALL}\n")
+            f"{Style.DIM}{truncate(extra_info['synopsis'])}{Style.RESET_ALL}\n")
 
-        # Extra info
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}")
-        for key in extra_info["ficha_tecnica"].keys():
-            value = extra_info["ficha_tecnica"][key]
-            if len(value) + len(key) > 80:
-                click.echo(
-                    f"{Fore.YELLOW}{key.capitalize()}:{Style.RESET_ALL}\n{truncate(value)}"
-                )
-                continue
+        for key in extra_info["data"].keys():
+            value = extra_info["data"][key]
 
-            click.echo(
-                f"{Fore.YELLOW}{key.capitalize()}: {Style.RESET_ALL}{truncate(value)}"
-            )
+            field: str = ""
+            match key:
+                case "director":
+                    field = "Dirección"
+                case "cast":
+                    field = "Elenco"
+                case "genre":
+                    field = "Género"
+                case "duration":
+                    field = "Duración"
+                case "origin":
+                    field = "Origen"
+                case "year":
+                    field = "Año"
+                case "age":
+                    field = "Calificación"
+
+            print_field = f"{field}: "
+            if len(value) + len(print_field) > 80:
+                value = truncate(value)
+                print_field = f"{field}:\n"
+
+            click.echo(f"{Fore.YELLOW}{print_field}{Style.RESET_ALL}{value}")
+
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
 
-        # Valor
-        valor_entrada: str = extra_info["valor_entrada"].strip().replace(
-            "\n", " ")
-        click.echo(
-            f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(valor_entrada)}\n")
+        cost: str = extra_info["cost"].strip().replace("\n", " ")
+        click.echo(f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(cost)}\n")
 
     @staticmethod
     def echo_image(url: str, uid: str) -> None:
@@ -138,8 +142,20 @@ class MoviePrinter:
         click.echo(output)
 
     @staticmethod
-    def modify_url(url: Any) -> Any:
+    def echo_urls(urls: list[str]) -> None:
         """
-        Modify the url of the movie to be the url that shows all the shows.
+        Echo the list of ulrs for the movie.
         """
-        return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
+        if len(urls) == 0:
+            return
+
+        click.echo(f"{Fore.YELLOW}Más info:{Style.RESET_ALL}")
+        for url in urls:
+            click.echo(url)
+
+    @staticmethod
+    def echo_data_structure(movie: dict) -> None:
+        """
+        Echo a raw movie dict.
+        """
+        click.echo(movie)

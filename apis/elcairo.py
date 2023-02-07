@@ -4,7 +4,7 @@ Cine El Cairo API
 
 import json
 import re
-from typing import Container, Match, Set
+from typing import Any, Container, Match, Set
 
 import arrow
 import requests
@@ -18,7 +18,7 @@ class ElCairo:
     Get El Cairo cinema shows information.
     """
 
-    def events_to_json(self, events: Set[Event]) -> str:
+    def events_to_json(self, events: Set[Event], reverse: bool = True) -> str:
         """
         Returns a json of events. The latest first. This method crawls for
         more info in the specified event url.
@@ -33,11 +33,7 @@ class ElCairo:
 
             parsed_dict["begin"] = self.get_date(event.begin)
 
-            # El Cairo events does not have an `end` date,
-            # is always the same as the `begin` date.
-            # parsed_dict["end"] = event.end.format("DD-MM-YYYY HH:mm:ss")
-
-            parsed_dict["url"] = event.url
+            parsed_dict["urls"] = [event.url, self.modify_url(event.url)]
 
             if event.url:
                 parsed_dict["extra_info"] = self.get_extra_info(event.url)
@@ -47,11 +43,14 @@ class ElCairo:
             events_dict[event.uid] = parsed_dict
 
         sorted_list: list = sorted(
-            events_dict.items(), key=lambda x: x[1]["begin"], reverse=True
+            events_dict.items(), key=lambda x: x[1]["begin"], reverse=reverse
         )
         sorted_dict: dict = dict(sorted_list)
         return json.dumps(sorted_dict)
 
+    ###########################################################################
+    # EVENT
+    ###########################################################################
     def get_todays_shows_event(self) -> Set[Event]:
         """
         Get todays movie shows events. The events are not sorted.
@@ -77,7 +76,8 @@ class ElCairo:
 
         now: Arrow = arrow.now()
 
-        year, month = (now.year, now.month)
+        year: int = now.year
+        month: int = now.month
 
         upcoming_events: Set[Event] = set()
         current_events: Set[Event] = self.fetch_events(
@@ -108,7 +108,8 @@ class ElCairo:
 
         now: Arrow = arrow.now()
 
-        year, month = (now.year, now.month)
+        year: int = now.year
+        month: int = now.month
 
         past_events: Set[Event] = set()
         current_events: Set[Event] = self.fetch_events(
@@ -166,13 +167,14 @@ class ElCairo:
         month = str(month).zfill(2)
         day = str(day).zfill(2)
 
-        given_date: str = arrow.get(
-            f"{year}-{month}-{day}").format("YYYY-MM-DD")
+        given_date: Arrow = arrow.get(f"{year}-{month}-{day} 23:59:59").replace(
+            tzinfo="local"
+        )
 
         upcoming_events: Set[Event] = self.get_upcoming_shows_event()
         until_date_events: Set[Event] = set()
         for event in upcoming_events:
-            if event.begin.format("YYYY-MM-DD") <= given_date:
+            if event.begin <= given_date:
                 until_date_events.add(event)
 
         return until_date_events
@@ -181,66 +183,68 @@ class ElCairo:
         """
         Get all shows events. The events are not sorted.
         """
-        all_events: Set = set()
+        all_events: Set[Event] = set()
         all_events.update(self.get_past_shows_event())
         all_events.update(self.get_upcoming_shows_event())
 
         return all_events
 
-    def get_todays_shows_json(self):
+    ###########################################################################
+    # JSON
+    ###########################################################################
+    def get_todays_shows_json(self, reverse: bool = True):
         """
         Get todays movie shows events as json.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         todays_events = self.get_todays_shows_event()
-        return self.events_to_json(todays_events)
+        return self.events_to_json(todays_events, reverse)
 
-    def get_upcoming_shows_json(self) -> str:
+    def get_upcoming_shows_json(self, reverse: bool = True) -> str:
         """
         Get upcoming movie shows events as json.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         upcoming_events = self.get_upcoming_shows_event()
-        return self.events_to_json(upcoming_events)
+        return self.events_to_json(upcoming_events, reverse)
 
-    def get_past_shows_json(self) -> str:
+    def get_past_shows_json(self, reverse: bool = True) -> str:
         """
         Get past movie shows events.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         past_events = self.get_past_shows_event()
-        return self.events_to_json(past_events)
+        return self.events_to_json(past_events, reverse)
 
     def get_date_shows_json(
-        self, year: str | int, month: str | int, day: str | int
+        self, year: str | int, month: str | int, day: str | int, reverse: bool = True
     ) -> str:
         """
         Get movie shows of a given date as json.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         date_events = self.get_date_shows_event(year, month, day)
-        return self.events_to_json(date_events)
+        return self.events_to_json(date_events, reverse)
 
     def get_until_date_shows_json(
-        self, year: str | int, month: str | int, day: str | int
+        self, year: str | int, month: str | int, day: str | int, reverse: bool = True
     ) -> str:
         """
         Get movie shows until a given date.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         until_date_events = self.get_until_date_shows_event(year, month, day)
-        return self.events_to_json(until_date_events)
+        return self.events_to_json(until_date_events, reverse)
 
-    def get_all_shows_json(self) -> str:
+    def get_all_shows_json(self, reverse: bool = True) -> str:
         """
         Get all movie shows events.
-        The events are sorted by date, the latest first.
+        Default sort: closest shows last.
         """
         all_events = self.get_all_shows_event()
-        return self.events_to_json(all_events)
+        return self.events_to_json(all_events, reverse)
 
-    @staticmethod
-    def get_extra_info(url: str) -> dict:
+    def get_extra_info(self, url: str) -> dict:
         """
         Get the extra info inside a El Cairo's url.
         """
@@ -263,31 +267,72 @@ class ElCairo:
 
         soup = BeautifulSoup(response_html, "html.parser")
 
-        sinopsis: str = "[Nothing to show...]"
-        sinopsis_elem: Tag | None = soup.select_one(".sinopsis-online")
-        if sinopsis_elem is not None and sinopsis_elem.find("p") is not None:
-            sinopsis = sinopsis_elem.find("p").text
-        extra_info["sinopsis"] = sinopsis
+        synopsis: str = "[Nothing to show...]"
+        synopsis_elem: Tag | None = soup.select_one(".sinopsis-online")
+        if synopsis_elem is not None and synopsis_elem.find("p") is not None:
+            synopsis = synopsis_elem.find("p").text
+        extra_info["synopsis"] = synopsis
 
-        ficha_tecnica: dict = {}
-        ficha_tecnica_elem: Tag | None = soup.select_one(
-            ".ficha-tecnica-online")
-        if ficha_tecnica_elem is not None:
-            ficha_tecnica_data = ficha_tecnica_elem.text.split("\n")
-            for data in ficha_tecnica_data:
-                if re.match(r"^\w+: .*$", data):
-                    splitted_data: list[str] = data.split(":")
-                    ficha_tecnica[splitted_data[0]] = splitted_data[1]
+        data: dict = {}
+        data_elem: Tag | None = soup.select_one(".ficha-tecnica-online")
+        if data_elem is not None:
+            data = self.get_extra_info_data(data_elem)
+        if not data:
+            data["nothing"] = "[Nothing to show...]"
+        extra_info["data"] = data
 
-        extra_info["ficha_tecnica"] = ficha_tecnica
-
-        valor_entrada: str = "[Nothing to show...]"
-        valor_entrada_elem: Tag | None = soup.select_one(".informacion-entradas")
-        if valor_entrada_elem is not None and valor_entrada_elem.find("p") is not None:
-            valor_entrada = valor_entrada_elem.find("p").text
-        extra_info["valor_entrada"] = valor_entrada
+        cost: str = "[Nothing to show...]"
+        cost_elem: Tag | None = soup.select_one(".informacion-entradas")
+        if cost_elem is not None and cost_elem.find("p") is not None:
+            cost = cost_elem.find("p").text
+        extra_info["cost"] = cost
 
         return extra_info
+
+    @staticmethod
+    def get_extra_info_data(data_elem: Tag) -> dict:
+        """
+        Get the extra data in the extra information.
+        """
+        data: dict = {}
+        data_lines: list[str] = data_elem.text.split("\n")
+        if len(data_lines) == 0:
+            return data
+
+        for line in data_lines:
+            match = re.match(r"^(\w+): (.+)$", line)
+            if not match:
+                continue
+
+            field_name: str = match.group(1)
+            field_data: str = match.group(2)
+
+            key: str = ""
+            match field_name:
+                case "DIRECCIÓN":
+                    key = "director"
+                case "ELENCO":
+                    key = "cast"
+                case "GÉNERO":
+                    key = "genre"
+                case "DURACIÓN":
+                    key = "duration"
+                case "ORIGEN":
+                    key = "origin"
+                case "AÑO":
+                    key = "year"
+                case "CALIFICACIÓN":
+                    key = "age"
+
+            data[key] = field_data
+        return data
+
+    @staticmethod
+    def modify_url(url: Any) -> Any:
+        """
+        Modify the url of the movie show to be the url that shows all the shows.
+        """
+        return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
 
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:

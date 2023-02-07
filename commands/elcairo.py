@@ -59,6 +59,9 @@ def day(ctx, date) -> None:
     date_json = elcairo_obj.get_date_shows_json(
         date.year, date.month, date.day)
 
+
+    ctx.obj["printer"].echo_data_structure(date_json)
+
     ctx.obj["printer"].echo_list(date_json)
 
 
