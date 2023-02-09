@@ -45,12 +45,10 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 ```
 
 ### Example
+https://github.com/pablos123/cinecli/blob/main/api_example.md
 
 En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
-De otros cines todavía no encontré nada parecido.
-Tal vez use un scraper en algún momento con alguno para ver que onda y vea si puedo resolver algo.
-
-Si alguien encuentra algún archivo .ics de otros cines la mejor.
+De otros cines no encontré nada parecido, así que voy a scrapear las páginas.
 
 # Screenshots
 
