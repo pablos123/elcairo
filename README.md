@@ -48,7 +48,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 
 En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
 De otros cines todavía no encontré nada parecido.
-Tal vez use un crawler en algún momento con alguno para ver que onda y vea si puedo resolver algo.
+Tal vez use un scraper en algún momento con alguno para ver que onda y vea si puedo resolver algo.
 
 Si alguien encuentra algún archivo .ics de otros cines la mejor.
 
@@ -75,13 +75,13 @@ python3 cinecli.py --urls --images elcairo upcoming
 - [X] Error handling for dates without shows.
 - [X] Understand a little more of what I'm retrieving with that .ics file.
 - [X] Date sorting (Default: closest shows last).
-- [X] Crawl the info url to get more information in the API, e.g the duration of the film.
+- [X] Scrap the info url to get more information in the API, e.g the duration of the film.
 
 ## Showcase
-- [ ] Crawl tf out.
+- [ ] Scrap tf out.
 
 ## Arteón
-- [ ] Crawl tf out.
+- [ ] Scrap tf out.
 
 ## Monumental
-- [ ] Crawl tf out.
+- [ ] Scrap tf out.
