@@ -3,7 +3,7 @@
 Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz de mierda a fijarme
 que es lo que van a pasar, y de paso nunca la entiendo.
 
-## Dependencias
+## Dependencies
 
 ```terminal
 pip install ics icalendar climage requests colorama click arrow beautifulsoup4
@@ -24,7 +24,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 
 ```json
 {
-  "<movie/event identified>": {
+  "<movie/event identifier>": {
     "name": "<name of the movie>",
     "begin": "<string that shows when the movie start>",
     "urls": [ "<list of urls for more info>", "<url1>" ],
@@ -150,4 +150,10 @@ python3 cinecli.py --urls --images elcairo upcoming
 - [X] Crawl the info url to get more information in the API, e.g the duration of the film.
 
 ## Showcase
+- [ ] Crawl tf out.
+
+## Arteón
+- [ ] Crawl tf out.
+
+## Monumental
 - [ ] Crawl tf out.
