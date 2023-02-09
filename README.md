@@ -30,94 +30,22 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
     "urls": [ "<list of urls for more info>", "<url1>" ],
     "extra_info": {
       "synopsis": "<movie synopsis>",
-      "data": {
-        "director": "<director>",
-        "cast": "<cast>",
-        "genre": "<genre>",
-        "duration": "<duration>",
-        "origin": "<origin>",
-        "year": "<year>",
-        "age": "<age restriction>"
-      },
+      "director": "<director>",
+      "cast": "<cast>",
+      "genre": "<genre>",
+      "duration": "<duration>",
+      "origin": "<origin>",
+      "year": "<year>",
+      "age": "<age restriction>",
       "cost": "<cost>"
     },
     "image_url": "<image url to render it in the terminal>"
-  },
-  <more events>
+  }
 }
 ```
 
 ### Example
-```json
-{
-  "14896-1676068200-1676068200@elcairocinepublico.gob.ar": {
-    "name": "AFTERSUN",
-    "begin": "10-02-2023 22:30:00 (en 3 días)",
-    "urls": [
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/aftersun/2023-02-10/",
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/aftersun/"
-    ],
-    "extra_info": {
-      "synopsis": "Sophie reflexiona sobre la alegría compartida y la melancolía privada de unas vacaciones que hizo con su padre 20 años atrás. Los recuerdos reales e imaginarios llenan los espacios entre las imágenes mientras intenta reconciliar al padre que conoció con el hombre que no conoció.",
-      "data": {
-        "director": "Charlotte Wells ",
-        "cast": "Paul Mescal, Francesca Corio, Celia Rowlson-Hall, Kayleigh Coleman, Sally Messham, Harry Perdios, Ethan Smith ",
-        "genre": "Drama",
-        "duration": "98’",
-        "origin": "Estados Unidos, Reino Unido ",
-        "year": "2022 ",
-        "age": "SAM13 (Para Mayores de 13 años) "
-      },
-      "cost": "$250\nEst. y Jub $200"
-    },
-    "image_url": "https://elcairocinepublico.gob.ar/wp-content/uploads/2023/01/Aftersun-01.jpg"
-  },
-  "14855-1676061000-1676061000@elcairocinepublico.gob.ar": {
-    "name": "BAHÍA BLANCA",
-    "begin": "10-02-2023 20:30:00 (en 3 días)",
-    "urls": [
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/bahia-blanca/2023-02-10/",
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/bahia-blanca/"
-    ],
-    "extra_info": {
-      "synopsis": "Mario, docente universitario, utiliza una investigación sobre el escritor Ezequiel Martínez Estrada para huir de su pasado. Establecido en Bahía Blanca, el lugar parece ser ideal para el olvido, pero un encuentro con un viejo amigo desencadena el peor de los peligros.",
-      "data": {
-        "director": "Rodrigo Caprotti  ",
-        "cast": "Guillermo Pfening, Elisa Carricajo, Javier Drolas, Marcelo Subiotto, Ailin Salas, Violeta Palukas, Julia Martínez Rubio ",
-        "genre": "Drama",
-        "duration": "82'",
-        "origin": "Argentina ",
-        "year": "2020 ",
-        "age": "SAM16 (Para Mayores de 16 años) "
-      },
-      "cost": "$250\nEst. y Jub. $200"
-    },
-    "image_url": "https://elcairocinepublico.gob.ar/wp-content/uploads/2023/01/Bahía-Blanca-04.jpg"
-  },
-  "14880-1676052000-1676052000@elcairocinepublico.gob.ar": {
-    "name": "HOLY SPIDER",
-    "begin": "10-02-2023 18:00:00 (en 2 días)",
-    "urls": [
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/holy-spider/2023-02-10/",
-      "https://elcairocinepublico.gob.ar/pelicula-de-sala/holy-spider/"
-    ],
-    "extra_info": {
-      "synopsis": "Irán, 2001. Una periodista investiga una serie de femicidios en los barrios peligrosos de la ciudad santa de Mashhad. Descubre que las autoridades locales no trabajan en resolver los casos. Los crímenes son obra de un hombre que ataca a prostitutas y asegura purificar la ciudad de sus pecados. ",
-      "data": {
-        "director": "Ali Abbasi ",
-        "cast": "Zar Amir-Ebrahimi, Mehdi Bajestani, Arash Ashtiani, Forouzan Jamshidnejad, Mesbah Taleb, Alice Rahimi, Sara Fazilat, Sina Parvaneh, Nima Akbarpour, Firouz Agheli ",
-        "genre": "Drama, Suspenso",
-        "duration": "117'",
-        "origin": "Dinamarca ",
-        "year": "2022 ",
-        "age": "SAM16 (Para Mayores de 16 años) "
-      },
-      "cost": "$250\nEst. y Jub. $200"
-    },
-    "image_url": "https://elcairocinepublico.gob.ar/wp-content/uploads/2023/01/Holy-Spider-01.jpeg"
-  }
-}
-```
+
 En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
 De otros cines todavía no encontré nada parecido.
 Tal vez use un crawler en algún momento con alguno para ver que onda y vea si puedo resolver algo.
