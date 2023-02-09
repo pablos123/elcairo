@@ -9,6 +9,26 @@ import requests
 from colorama import Back, Fore, Style
 
 
+def truncate(string: str, start_len: int = 0):
+    """
+    Truncate a string to only be 80 characters long.
+    start_len represents the lenght of a title for the string.
+    """
+    first_line_len = 80 - start_len
+
+    if len(string) <= first_line_len:
+        return string.replace("\n", " ").strip()
+
+    out: str = ""
+    lines: list[str] = [string[0:first_line_len]]
+    lines.extend([string[i: i + 80]
+                 for i in range(first_line_len, len(string), 80)])
+    for line in lines:
+        out += f"{line}\n"
+
+    return out.strip()
+
+
 class MoviePrinter:
     """
     Movie printing utilities for echoing with click.
@@ -26,96 +46,88 @@ class MoviePrinter:
 
         movies: dict = json.loads(movies_json)
 
-        for uid in movies.keys():
-            movie = movies[uid]
-
+        default = "[Nothing to show...]"
+        for uid, movie in movies.items():
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
-            name: str = movie["name"]
-            if name == "":
-                name = "[No name...]"
+            name: str = default
+            if "name" in movie and movie["name"] != "":
+                name = movie["name"]
 
-            begin: str = movie["begin"]
-            if begin == "":
-                begin = "[No beginning...]"
+            begin: str = default
+            if "begin" in movie and movie["begin"] != "":
+                begin = movie["begin"]
 
             click.echo(
                 f"{Style.BRIGHT}{Style.BRIGHT}{name}{Style.RESET_ALL}   {begin}")
 
             if self.images:
                 click.echo()
-                self.echo_image(movie["image_url"], uid)
+                if "image_url" in movie and movie["image_url"] != "":
+                    self.echo_image(movie["image_url"], uid)
+                else:
+                    click.echo(default)
 
             if not self.no_extra_info:
                 click.echo()
-                self.echo_extra_info(movie["extra_info"])
+                if "extra_info" in movie and movie["extra_info"] != {}:
+                    self.echo_extra_info(movie["extra_info"])
+                else:
+                    click.echo(default)
 
             if self.urls:
                 click.echo()
-                self.echo_urls(movie["urls"])
+                if "urls" in movie and movie["urls"] != []:
+                    self.echo_urls(movie["urls"])
+                else:
+                    click.echo(default)
 
             click.echo()
 
-    @staticmethod
-    def echo_extra_info(extra_info: dict) -> None:
+    def echo_extra_info(self, extra_info: dict) -> None:
         """
         Show extra info.
         """
 
-        if "failed" in extra_info:
-            click.echo(extra_info["failed"])
-            return
+        default = "[Nothing to show...]"
 
-        def truncate(string: str):
-            """
-            Truncate a string to only be 80 characters long.
-            """
-            if len(string) <= 80:
-                return string.strip()
+        synopsis = default
+        if "synopsis" in extra_info and extra_info["synopsis"] != "":
+            synopsis = extra_info["synopsis"]
 
-            out: str = ""
-            lines: list[str] = [string[i: i + 80]
-                                for i in range(0, len(string), 80)]
-            for line in lines:
-                out += f"{line}\n"
-
-            return out.strip()
-
-        click.echo(
-            f"{Style.DIM}{truncate(extra_info['synopsis'])}{Style.RESET_ALL}\n")
+        click.echo(f"{Style.DIM}{truncate(synopsis)}{Style.RESET_ALL}\n")
 
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}")
-        for key in extra_info["data"].keys():
-            value = extra_info["data"][key]
 
-            field: str = ""
-            match key:
-                case "director":
-                    field = "Dirección"
-                case "cast":
-                    field = "Elenco"
-                case "genre":
-                    field = "Género"
-                case "duration":
-                    field = "Duración"
-                case "origin":
-                    field = "Origen"
-                case "year":
-                    field = "Año"
-                case "age":
-                    field = "Calificación"
-
-            print_field = f"{field}: "
-            if len(value) + len(print_field) > 80:
-                value = truncate(value)
-                print_field = f"{field}:\n"
-
-            click.echo(f"{Fore.YELLOW}{print_field}{Style.RESET_ALL}{value}")
+        self.echo_extra_info_title(extra_info, "direction", "Dirección: ")
+        self.echo_extra_info_title(extra_info, "cast", "Elenco: ")
+        self.echo_extra_info_title(extra_info, "genre", "Género: ")
+        self.echo_extra_info_title(extra_info, "duration", "Duración: ")
+        self.echo_extra_info_title(extra_info, "origin", "Origen: ")
+        self.echo_extra_info_title(extra_info, "year", "Año: ")
+        self.echo_extra_info_title(extra_info, "age", "Calificación: ")
 
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
 
-        cost: str = extra_info["cost"].strip().replace("\n", " ")
-        click.echo(f"{Fore.GREEN}Valor:{Style.RESET_ALL} {truncate(cost)}")
+        self.echo_extra_info_title(extra_info, "cost", "Valor: ", Fore.GREEN)
+
+    @staticmethod
+    def echo_extra_info_title(
+        extra_info: dict,
+        key: str,
+        title: str,
+        color: str = Fore.YELLOW,
+    ) -> None:
+        """
+        Show a title in the extra info.
+        """
+
+        data = "[Nothing to show...]"
+        if key in extra_info and extra_info[key] != "":
+            data = extra_info[key]
+
+        click.echo(
+            f"{color}{title}{Style.RESET_ALL}{truncate(data, len(title))}")
 
     @staticmethod
     def echo_image(url: str, uid: str) -> None:
@@ -148,8 +160,6 @@ class MoviePrinter:
         """
         Echo the list of ulrs for the movie.
         """
-        if len(urls) == 0:
-            return
 
         click.echo(f"{Fore.YELLOW}Más info:{Style.RESET_ALL}")
         for url in urls:

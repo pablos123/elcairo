@@ -260,28 +260,23 @@ class ElCairo:
             requests.exceptions.RequestException,
         ) as _:
             # It's not important if I cannot get some of the info.
-            extra_info["failed"] = "[Error fetching extra info...]"
             return extra_info
 
         response_html: str = response.text
 
         soup = BeautifulSoup(response_html, "html.parser")
 
-        synopsis: str = "[Nothing to show...]"
+        synopsis: str = ""
         synopsis_elem: Tag | None = soup.select_one(".sinopsis-online")
         if synopsis_elem is not None and synopsis_elem.find("p") is not None:
             synopsis = synopsis_elem.find("p").text
         extra_info["synopsis"] = synopsis
 
-        data: dict = {}
         data_elem: Tag | None = soup.select_one(".ficha-tecnica-online")
         if data_elem is not None:
-            data = self.get_extra_info_data(data_elem)
-        if not data:
-            data["nothing"] = "[Nothing to show...]"
-        extra_info["data"] = data
+            extra_info.update(self.get_extra_info_data(data_elem))
 
-        cost: str = "[Nothing to show...]"
+        cost: str = ""
         cost_elem: Tag | None = soup.select_one(".informacion-entradas")
         if cost_elem is not None and cost_elem.find("p") is not None:
             cost = cost_elem.find("p").text
@@ -310,7 +305,7 @@ class ElCairo:
             key: str = ""
             match field_name:
                 case "DIRECCIÓN":
-                    key = "director"
+                    key = "direction"
                 case "ELENCO":
                     key = "cast"
                 case "GÉNERO":
