@@ -7,6 +7,7 @@ import os
 import shutil
 import sqlite3
 
+import arrow
 import click
 import climage
 import requests
@@ -41,16 +42,23 @@ def get_ascii_image(url: str, uid: str) -> str:
 
 def get_string_urls(urls: list[str]) -> str:
     """
-    Return a concatenation of the info urls of the movie.
+    Return a concatenation of the info urls of the movie show.
     """
 
     return " ".join(urls)
 
 
+def get_int_date(date: str) -> int:
+    """
+    Convert the date into an int timestamp.
+    """
+    return int(arrow.get(date).timestamp())
+
+
 @click.group()
 def database() -> None:
     """
-    Database methods.
+    Populate the database.
     """
 
 
@@ -72,7 +80,7 @@ def populate() -> None:
     CREATE TABLE IF NOT EXISTS movies (
         movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        date TEXT NOT NULL,
+        date INTEGER NOT NULL,
         synopsis TEXT NOT NULL,
         direction TEXT NOT NULL,
         cast TEXT NOT NULL,
@@ -97,7 +105,7 @@ def populate() -> None:
     for uid, movie_data in events_dict.items():
         event = (
             movie_data["name"],
-            movie_data["date"],
+            get_int_date(movie_data["date"]),
             movie_data["synopsis"],
             movie_data["direction"],
             movie_data["cast"],

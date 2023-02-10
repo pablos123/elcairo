@@ -1,12 +1,6 @@
 """An event is always a movie in this program"""
-import json
-import os
-import shutil
-
 import arrow
 import click
-import climage
-import requests
 from arrow import Arrow
 from colorama import Back, Fore, Style
 
@@ -50,6 +44,8 @@ class MoviePrinter:
 
         for movie in movies:
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
+
+            self.echo_title(movie)
 
             if self.images:
                 self.echo_image(movie)
@@ -112,7 +108,7 @@ class MoviePrinter:
             """
 
             if not data:
-                data = "[Nothing to show...]"
+                data = DEFAULT
 
             click.echo(
                 f"{color}{title}{Style.RESET_ALL}{truncate(data, len(title))}")
