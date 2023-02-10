@@ -20,30 +20,48 @@ class ElCairo:
 
     def events_to_json(self, events: Set[Event], reverse: bool = True) -> str:
         """
-        Returns a json of events. The latest first. This method crawls for
+        Returns a json of events. The latest first. This method scraps for
         more info in the specified event url.
         """
 
         events_dict: dict = {}
 
         for event in events:
-            parsed_dict: dict = {}
+            parsed_dict: dict = {
+                "name": "",
+                "date": "",
+                "synopsis": "",
+                "cost": "",
+                "cast": "",
+                "direction": "",
+                "genre": "",
+                "duration": "",
+                "origin": "",
+                "year": "",
+                "age": "",
+                "image_url": "",
+                "urls": [],
+            }
 
-            parsed_dict["name"] = event.name.upper()
+            if event.name:
+                parsed_dict["name"] = event.name.upper()
 
-            parsed_dict["begin"] = self.get_date(event.begin)
-
-            parsed_dict["urls"] = [event.url, self.modify_url(event.url)]
+            if event.begin:
+                parsed_dict["date"] = str(event.begin)
 
             if event.url:
-                parsed_dict["extra_info"] = self.get_extra_info(event.url)
+                parsed_dict["urls"] = [event.url, self.modify_url(event.url)]
 
-            parsed_dict["image_url"] = self.get_image(event.extra)
+            if event.url:
+                parsed_dict.update(self.get_extra_info(event.url))
+
+            if event.extra:
+                parsed_dict["image_url"] = self.get_image(event.extra)
 
             events_dict[event.uid] = parsed_dict
 
         sorted_list: list = sorted(
-            events_dict.items(), key=lambda x: x[1]["begin"], reverse=reverse
+            events_dict.items(), key=lambda x: x[1]["date"], reverse=reverse
         )
         sorted_dict: dict = dict(sorted_list)
         return json.dumps(sorted_dict)
@@ -250,6 +268,7 @@ class ElCairo:
         """
 
         extra_info: dict = {}
+
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -351,16 +370,6 @@ class ElCairo:
             if check_mime(splitted_item_str[0]):
                 image_url = splitted_item_str[1] + ":" + splitted_item_str[2]
         return image_url
-
-    @staticmethod
-    def get_date(event_begin: Arrow) -> str:
-        """
-        Format the date information a return a nice show's date
-        """
-        date: str = event_begin.format("DD-MM-YYYY HH:mm:ss")
-        human_date: str = event_begin.humanize(locale="es")
-
-        return f"{date} ({human_date})"
 
     @staticmethod
     def fetch_events(year: str, month: str) -> Set[Event]:

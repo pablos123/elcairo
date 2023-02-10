@@ -3,10 +3,14 @@ import json
 import os
 import shutil
 
+import arrow
 import click
 import climage
 import requests
+from arrow import Arrow
 from colorama import Back, Fore, Style
+
+DEFAULT = "[Nothing to show...]"
 
 
 def truncate(string: str, start_len: int = 0):
@@ -39,131 +43,108 @@ class MoviePrinter:
         self.no_extra_info = no_extra_info
         self.urls = urls
 
-    def echo_list(self, movies_json: str) -> None:
+    def echo_list(self, movies: dict) -> None:
         """
         Print a list of movies
         """
 
-        movies: dict = json.loads(movies_json)
-
-        default = "[Nothing to show...]"
-        for uid, movie in movies.items():
+        for movie in movies:
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
-            name: str = default
-            if "name" in movie and movie["name"] != "":
-                name = movie["name"]
-
-            begin: str = default
-            if "begin" in movie and movie["begin"] != "":
-                begin = movie["begin"]
-
-            click.echo(
-                f"{Style.BRIGHT}{Style.BRIGHT}{name}{Style.RESET_ALL}   {begin}")
-
             if self.images:
-                click.echo()
-                if "image_url" in movie and movie["image_url"] != "":
-                    self.echo_image(movie["image_url"], uid)
-                else:
-                    click.echo(default)
+                self.echo_image(movie)
 
             if not self.no_extra_info:
-                click.echo()
-                if "extra_info" in movie and movie["extra_info"] != {}:
-                    self.echo_extra_info(movie["extra_info"])
-                else:
-                    click.echo(default)
+                self.echo_extra_info(movie)
 
             if self.urls:
-                click.echo()
-                if "urls" in movie and movie["urls"] != []:
-                    self.echo_urls(movie["urls"])
-                else:
-                    click.echo(default)
+                self.echo_urls(movie)
 
             click.echo()
 
-    def echo_extra_info(self, extra_info: dict) -> None:
+    @staticmethod
+    def echo_title(movie: dict) -> None:
         """
-        Show extra info.
+        Echo the movie title with the date of the show.
         """
 
-        default = "[Nothing to show...]"
+        def get_nice_date(event_date: str) -> str:
+            """
+            Format the date information a return a nice show's date
+            """
+            if not event_date:
+                return DEFAULT
 
-        synopsis = default
-        if "synopsis" in extra_info and extra_info["synopsis"] != "":
-            synopsis = extra_info["synopsis"]
+            arrow_date: Arrow = arrow.get(event_date)
+            format_date: str = arrow_date.format("DD-MM-YYYY HH:mm:ss")
+            human_date: str = arrow_date.humanize(locale="es")
 
-        click.echo(f"{Style.DIM}{truncate(synopsis)}{Style.RESET_ALL}\n")
+            return f"{format_date} ({human_date})"
+
+        name: str = movie["name"] or DEFAULT
+
+        date = get_nice_date(movie["date"])
+
+        click.echo(
+            f"{Style.BRIGHT}{Style.BRIGHT}{name}{Style.RESET_ALL}   {date}")
+
+    @staticmethod
+    def echo_image(movie) -> None:
+        """
+        Echo an image.
+        """
+        image = movie["image"] or DEFAULT
+        click.echo(f"\n{image}")
+
+    @staticmethod
+    def echo_extra_info(movie: dict) -> None:
+        """
+        Echo extra info.
+        """
+
+        def echo_extra_info_data(
+            data: str,
+            title: str,
+            color: str = Fore.YELLOW,
+        ) -> None:
+            """
+            Echo data in the extra info.
+            """
+
+            if not data:
+                data = "[Nothing to show...]"
+
+            click.echo(
+                f"{color}{title}{Style.RESET_ALL}{truncate(data, len(title))}")
+
+        synopsis = movie["synopsis"] or DEFAULT
+
+        click.echo(f"\n{Style.DIM}{truncate(synopsis)}{Style.RESET_ALL}\n")
 
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}")
 
-        self.echo_extra_info_title(extra_info, "direction", "Dirección: ")
-        self.echo_extra_info_title(extra_info, "cast", "Elenco: ")
-        self.echo_extra_info_title(extra_info, "genre", "Género: ")
-        self.echo_extra_info_title(extra_info, "duration", "Duración: ")
-        self.echo_extra_info_title(extra_info, "origin", "Origen: ")
-        self.echo_extra_info_title(extra_info, "year", "Año: ")
-        self.echo_extra_info_title(extra_info, "age", "Calificación: ")
+        echo_extra_info_data(movie["direction"], "Dirección: ")
+        echo_extra_info_data(movie["cast"], "Elenco: ")
+        echo_extra_info_data(movie["genre"], "Género: ")
+        echo_extra_info_data(movie["duration"], "Duración: ")
+        echo_extra_info_data(movie["origin"], "Origen: ")
+        echo_extra_info_data(movie["year"], "Año: ")
+        echo_extra_info_data(movie["age"], "Calificación: ")
 
         click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
 
-        self.echo_extra_info_title(extra_info, "cost", "Valor: ", Fore.GREEN)
+        echo_extra_info_data(movie["cost"], "Valor: ", Fore.GREEN)
 
     @staticmethod
-    def echo_extra_info_title(
-        extra_info: dict,
-        key: str,
-        title: str,
-        color: str = Fore.YELLOW,
-    ) -> None:
+    def echo_urls(movie: dict) -> None:
         """
-        Show a title in the extra info.
+        Add new lines to the urls list.
         """
+        click.echo(f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL}")
+        if not movie["urls"]:
+            click.echo(DEFAULT)
 
-        data = "[Nothing to show...]"
-        if key in extra_info and extra_info[key] != "":
-            data = extra_info[key]
-
-        click.echo(
-            f"{color}{title}{Style.RESET_ALL}{truncate(data, len(title))}")
-
-    @staticmethod
-    def echo_image(url: str, uid: str) -> None:
-        """
-        Creates a temporal file reads it and
-        print the image through click.echo.
-        """
-        output: str = ""
-        try:
-            response = requests.get(url, stream=True, timeout=10)
-            response.raise_for_status()
-            file_name = f"/tmp/{uid}.jpeg"
-            with open(file_name, "wb") as image_file:
-                shutil.copyfileobj(response.raw, image_file)
-                output = climage.convert(file_name)
-            os.remove(file_name)
-        except (
-            requests.exceptions.HTTPError,
-            requests.exceptions.Timeout,
-            requests.exceptions.TooManyRedirects,
-            requests.exceptions.RequestException,
-            OSError,
-        ) as _:
-            output = "[Cannot show image...]"
-
-        click.echo(output)
-
-    @staticmethod
-    def echo_urls(urls: list[str]) -> None:
-        """
-        Echo the list of ulrs for the movie.
-        """
-
-        click.echo(f"{Fore.YELLOW}Más info:{Style.RESET_ALL}")
-        for url in urls:
-            click.echo(url)
+        click.echo(movie["urls"].replace(" ", "\n"))
 
     @staticmethod
     def echo_data_structure(movie: dict) -> None:

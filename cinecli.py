@@ -2,6 +2,7 @@
 import click
 
 from commands.elcairo import elcairo
+from commands.database import database
 
 
 @click.group()
@@ -21,6 +22,7 @@ def cinecli(ctx, images, no_extra_info, urls):
 
 
 cinecli.add_command(elcairo)
+cinecli.add_command(database)
 
 if __name__ == "__main__":
     # Each cinema will have a different way to get the information I think.
