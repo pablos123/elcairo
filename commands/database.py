@@ -58,7 +58,7 @@ def get_int_date(date: str) -> int:
 @click.group()
 def database() -> None:
     """
-    Populate the database.
+    Populate or clean the database.
     """
 
 
