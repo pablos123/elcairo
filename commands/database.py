@@ -150,8 +150,11 @@ def clean() -> None:
     """
     Clean the database.
     """
-    if os.path.exists("./cinecli.db"):
-        try:
-            os.remove("./cinecli.db")
-        except OSError as _:
-            click.echo("Cannot remove cinecli.db, try again...")
+    if not os.path.exists("./cinecli.db"):
+        click.echo("The database does not exists!")
+        return
+
+    try:
+        os.remove("./cinecli.db")
+    except OSError as _:
+        click.echo("Cannot remove cinecli.db, try again...")
