@@ -56,9 +56,11 @@ def populate() -> None:
     """
     Populate the database.
     """
-    if os.path.exists("./cinecli.db"):
+    script_dir: str = os.path.realpath(os.path.dirname(__file__))
+    database_file: str = os.path.join(script_dir, "cinecli.db")
+    if os.path.exists(database_file):
         try:
-            os.remove("./cinecli.db")
+            os.remove(database_file)
         except OSError as _:
             click.echo("Cannot remove cinecli.db, try again...")
 
@@ -92,8 +94,6 @@ def populate() -> None:
     events_dict = json.loads(elcairo.get_upcoming_shows_json())
 
     data_insert: list = []
-
-    click.echo(events_dict)
 
     for uid, movie_data in events_dict.items():
         event = (
@@ -145,11 +145,13 @@ def clean() -> None:
     """
     Clean the database.
     """
-    if not os.path.exists("./cinecli.db"):
+    script_dir: str = os.path.realpath(os.path.dirname(__file__))
+    database_file: str = os.path.join(script_dir, "cinecli.db")
+    if not os.path.exists(database_file):
         click.echo("The database does not exists!")
         return
 
     try:
-        os.remove("./cinecli.db")
+        os.remove(database_file)
     except OSError as _:
         click.echo("Cannot remove cinecli.db, try again...")

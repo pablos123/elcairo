@@ -33,8 +33,6 @@ python3 cinecli.py --help
 
 Tested in linux mint 21. (python 3.10.6)
 
-### Handy
-
 ## More info
 Cada cine es un comando y un grupo de comandos de click.
 
