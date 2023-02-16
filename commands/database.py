@@ -14,10 +14,14 @@ import requests
 
 from apis.elcairo import ElCairo
 
+###########################################################################
+# Functions to populate the database
+###########################################################################
+
 
 def get_ascii_image(url: str, uid: str) -> str:
     """
-    Creates a temporal file reads it and return the ascii art.
+    Creates a temporal file reads it, removes it and return the ascii art.
     """
     output: str = ""
     try:
@@ -40,21 +44,6 @@ def get_ascii_image(url: str, uid: str) -> str:
     return output
 
 
-def get_string_urls(urls: list[str]) -> str:
-    """
-    Return a concatenation of the info urls of the movie show.
-    """
-
-    return " ".join(urls)
-
-
-def get_int_date(date: str) -> int:
-    """
-    Convert the date into an int timestamp.
-    """
-    return int(arrow.get(date).timestamp())
-
-
 @click.group()
 def database() -> None:
     """
@@ -74,13 +63,15 @@ def populate() -> None:
             click.echo("Cannot remove cinecli.db, try again...")
 
     connection = sqlite3.connect("cinecli.db")
+
     cursor = connection.cursor()
 
     create_query: str = """
     CREATE TABLE IF NOT EXISTS movies (
         movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        date INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        compare_date INT NOT NULL,
         synopsis TEXT NOT NULL,
         direction TEXT NOT NULL,
         cast TEXT NOT NULL,
@@ -102,10 +93,13 @@ def populate() -> None:
 
     data_insert: list = []
 
+    click.echo(events_dict)
+
     for uid, movie_data in events_dict.items():
         event = (
             movie_data["name"],
-            get_int_date(movie_data["date"]),
+            str(arrow.get(movie_data["date"])),
+            int(arrow.get(movie_data["date"]).format("YYYYMMDD")),
             movie_data["synopsis"],
             movie_data["direction"],
             movie_data["cast"],
@@ -116,7 +110,7 @@ def populate() -> None:
             movie_data["age"],
             movie_data["cost"],
             get_ascii_image(movie_data["image_url"], uid),
-            get_string_urls(movie_data["urls"]),
+            " ".join(movie_data["urls"]),
             "elcairo",
         )
         data_insert.append(event)
@@ -126,6 +120,7 @@ def populate() -> None:
         INSERT INTO movies (
             'name',
             'date',
+            'compare_date',
             'synopsis',
             'direction',
             'cast',
@@ -138,7 +133,7 @@ def populate() -> None:
             'image',
             'urls',
             'cinema')
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
         data_insert,
     )
 

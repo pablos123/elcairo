@@ -5,9 +5,10 @@ El Cairo command.
 import os
 import sqlite3
 
+import arrow
 import click
+from arrow import Arrow
 
-from apis.elcairo import ElCairo
 from commands.lib.movie_printer import MoviePrinter
 
 
@@ -15,8 +16,6 @@ class NoDataBase(Exception):
     """
     Exception for execution without database.
     """
-
-    pass
 
 
 @click.group()
@@ -50,10 +49,15 @@ def today(ctx) -> None:
     Print todays movie shows.
     """
 
-    elcairo_obj: ElCairo = ElCairo()
-    todays_json: dict = elcairo_obj.get_todays_shows_json()
+    date_int: int = int(arrow.now().format("YYYYMMDD"))
 
-    ctx.obj["printer"].echo_list(todays_json)
+    res = ctx.obj["cursor"].execute(
+        f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date = {date_int};"
+    )
+
+    todays_shows = [dict(row) for row in res.fetchall()]
+
+    ctx.obj["printer"].echo_list(todays_shows)
 
 
 @elcairo.command()
@@ -63,8 +67,11 @@ def upcoming(ctx) -> None:
     Print upcoming movie shows.
     """
 
+    date_int: int = int(arrow.now().format("YYYYMMDD"))
+
     res = ctx.obj["cursor"].execute(
-        "SELECT * FROM movies WHERE cinema='elcairo'")
+        f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date >= {date_int};"
+    )
 
     upcoming_shows = [dict(row) for row in res.fetchall()]
 
@@ -79,11 +86,21 @@ def day(ctx, date) -> None:
     Print movie shows of a given date.
     """
 
-    elcairo_obj: ElCairo = ElCairo()
-    date_json: dict = elcairo_obj.get_date_shows_json(
-        date.year, date.month, date.day)
+    year: str = str(date.year).zfill(4)
+    month: str = str(date.month).zfill(2)
+    day_date: str = str(date.day).zfill(2)
 
-    ctx.obj["printer"].echo_list(date_json)
+    date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
+
+    date_int: int = int(date_arrow.format("YYYYMMDD"))
+
+    res = ctx.obj["cursor"].execute(
+        f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date = {date_int};"
+    )
+
+    day_shows = [dict(row) for row in res.fetchall()]
+
+    ctx.obj["printer"].echo_list(day_shows)
 
 
 @elcairo.command()
@@ -94,9 +111,18 @@ def until(ctx, date) -> None:
     Print movie shows until a given date.
     """
 
-    elcairo_obj: ElCairo = ElCairo()
-    until_json: dict = elcairo_obj.get_until_date_shows_json(
-        date.year, date.month, date.day
+    year: str = str(date.year).zfill(4)
+    month: str = str(date.month).zfill(2)
+    day_date: str = str(date.day).zfill(2)
+
+    date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
+
+    date_int: int = int(date_arrow.format("YYYYMMDD"))
+
+    res = ctx.obj["cursor"].execute(
+        f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date <= {date_int};"
     )
 
-    ctx.obj["printer"].echo_list(until_json)
+    day_shows = [dict(row) for row in res.fetchall()]
+
+    ctx.obj["printer"].echo_list(day_shows)

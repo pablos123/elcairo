@@ -69,23 +69,6 @@ class ElCairo:
     ###########################################################################
     # EVENT
     ###########################################################################
-    def get_todays_shows_event(self) -> Set[Event]:
-        """
-        Get todays movie shows events. The events are not sorted.
-        """
-
-        now: Arrow = arrow.now()
-
-        current_events: Set[Event] = self.fetch_events(
-            str(now.year).zfill(4), str(now.month).zfill(2)
-        )
-
-        todays_events: Set[Event] = set()
-        for event in current_events:
-            if event.begin.format("MM-DD") == now.format("MM-DD"):
-                todays_events.add(event)
-
-        return todays_events
 
     def get_upcoming_shows_event(self) -> Set[Event]:
         """
@@ -151,52 +134,6 @@ class ElCairo:
 
         return past_events
 
-    def get_date_shows_event(
-        self, year: str | int, month: str | int, day: str | int
-    ) -> Set[Event]:
-        """
-        Get movie shows events of a given date. The events are not sorted.
-        """
-
-        year = str(year).zfill(4)
-        month = str(month).zfill(2)
-        day = str(day).zfill(2)
-
-        given_date: str = arrow.get(
-            f"{year}-{month}-{day}").format("YYYY-MM-DD")
-
-        current_events: Set[Event] = self.fetch_events(year, month)
-
-        date_events: Set[Event] = set()
-        for event in current_events:
-            if event.begin.format("YYYY-MM-DD") == given_date:
-                date_events.add(event)
-
-        return date_events
-
-    def get_until_date_shows_event(
-        self, year: str | int, month: str | int, day: str | int
-    ) -> Set[Event]:
-        """
-        Get movie shows events until a given date. The events are not sorted.
-        """
-
-        year = str(year).zfill(4)
-        month = str(month).zfill(2)
-        day = str(day).zfill(2)
-
-        given_date: Arrow = arrow.get(f"{year}-{month}-{day} 23:59:59").replace(
-            tzinfo="local"
-        )
-
-        upcoming_events: Set[Event] = self.get_upcoming_shows_event()
-        until_date_events: Set[Event] = set()
-        for event in upcoming_events:
-            if event.begin <= given_date:
-                until_date_events.add(event)
-
-        return until_date_events
-
     def get_all_shows_event(self) -> Set[Event]:
         """
         Get all shows events. The events are not sorted.
@@ -210,13 +147,6 @@ class ElCairo:
     ###########################################################################
     # JSON
     ###########################################################################
-    def get_todays_shows_json(self, reverse: bool = True):
-        """
-        Get todays movie shows events as json.
-        Default sort: closest shows last.
-        """
-        todays_events = self.get_todays_shows_event()
-        return self.events_to_json(todays_events, reverse)
 
     def get_upcoming_shows_json(self, reverse: bool = True) -> str:
         """
@@ -233,26 +163,6 @@ class ElCairo:
         """
         past_events = self.get_past_shows_event()
         return self.events_to_json(past_events, reverse)
-
-    def get_date_shows_json(
-        self, year: str | int, month: str | int, day: str | int, reverse: bool = True
-    ) -> str:
-        """
-        Get movie shows of a given date as json.
-        Default sort: closest shows last.
-        """
-        date_events = self.get_date_shows_event(year, month, day)
-        return self.events_to_json(date_events, reverse)
-
-    def get_until_date_shows_json(
-        self, year: str | int, month: str | int, day: str | int, reverse: bool = True
-    ) -> str:
-        """
-        Get movie shows until a given date.
-        Default sort: closest shows last.
-        """
-        until_date_events = self.get_until_date_shows_event(year, month, day)
-        return self.events_to_json(until_date_events, reverse)
 
     def get_all_shows_json(self, reverse: bool = True) -> str:
         """
@@ -314,7 +224,7 @@ class ElCairo:
             return data
 
         for line in data_lines:
-            match = re.match(r"^(\w+): (.+)$", line)
+            match = re.match(r"^ *(\w+): (.+)$", line)
             if not match:
                 continue
 

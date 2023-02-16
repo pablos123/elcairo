@@ -11,11 +11,29 @@ pip install ics icalendar climage requests colorama click arrow beautifulsoup4
 
 ## Run
 
+Primero populamos la database
+```terminal
+python3 cinecli.py database populate
+```
+
+Despues puedo ver las pelis de hoy o las de algún día en particular.
+
+```terminal
+python3 cinecli.py --images --urls elcairo today
+```
+
+```terminal
+python3 cinecli.py --images --urls elcairo day --date 16-02-2023
+```
+
+Más info
 ```terminal
 python3 cinecli.py --help
 ```
 
 Tested in linux mint 21. (python 3.10.6)
+
+### Handy
 
 ## More info
 Cada cine es un comando y un grupo de comandos de click.
@@ -28,17 +46,15 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
     "name": "<name of the movie>",
     "begin": "<string that shows when the movie start>",
     "urls": [ "<list of urls for more info>", "<url1>" ],
-    "extra_info": {
-      "synopsis": "<movie synopsis>",
-      "director": "<director>",
-      "cast": "<cast>",
-      "genre": "<genre>",
-      "duration": "<duration>",
-      "origin": "<origin>",
-      "year": "<year>",
-      "age": "<age restriction>",
-      "cost": "<cost>"
-    },
+    "synopsis": "<movie synopsis>",
+    "director": "<director>",
+    "cast": "<cast>",
+    "genre": "<genre>",
+    "duration": "<duration>",
+    "origin": "<origin>",
+    "year": "<year>",
+    "age": "<age restriction>",
+    "cost": "<cost>",
     "image_url": "<image url to render it in the terminal>"
   }
 }
@@ -65,9 +81,9 @@ python3 cinecli.py --urls --images elcairo upcoming
 - [X] Make the printer agnostic to the cinema.
 - [X] Decide how to 'Standarize' the data in the extra info.
 - [X] Testing, error handling. (Overall it works, if nothing breaks I'll do nothing)
+- [X] Populate a sqlite db, fetching the .ics files takes too long.
 - [ ] Api documentation.
 - [ ] virtualenv?
-- [ ] Populate a sqlite db, fetching the .ics files takes too long.
 - [ ] Support notifications.
 - [ ] Support other cinemas.
 

@@ -1,4 +1,4 @@
-"""An event is always a movie in this program"""
+"""Print movies"""
 import arrow
 import click
 from arrow import Arrow
@@ -141,10 +141,3 @@ class MoviePrinter:
             click.echo(DEFAULT)
 
         click.echo(movie["urls"].replace(" ", "\n"))
-
-    @staticmethod
-    def echo_data_structure(movie: dict) -> None:
-        """
-        Echo a raw movie dict.
-        """
-        click.echo(movie)
