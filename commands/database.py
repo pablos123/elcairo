@@ -57,7 +57,7 @@ def populate() -> None:
     Populate the database.
     """
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "cinecli.db")
+    database_file: str = os.path.join(script_dir, "..", "cinecli.db")
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
@@ -146,7 +146,7 @@ def clean() -> None:
     Clean the database.
     """
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "cinecli.db")
+    database_file: str = os.path.join(script_dir, "..", "cinecli.db")
     if not os.path.exists(database_file):
         click.echo("The database does not exists!")
         return
