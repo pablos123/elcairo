@@ -11,13 +11,12 @@ pip install ics icalendar climage requests colorama click arrow beautifulsoup4
 
 ## Run
 
-Primero populamos la database
+Primero populamos la database.
 ```terminal
 python3 cinecli.py database populate
 ```
 
 Despues puedo ver las pelis de hoy o las de algún día en particular.
-
 ```terminal
 python3 cinecli.py --images --urls elcairo today
 ```
@@ -26,7 +25,7 @@ python3 cinecli.py --images --urls elcairo today
 python3 cinecli.py --images --urls elcairo day --date 16-02-2023
 ```
 
-Más info
+Más info.
 ```terminal
 python3 cinecli.py --help
 ```
@@ -67,9 +66,9 @@ De otros cines no encontré nada parecido, así que voy a scrapear las páginas.
 # Screenshots
 
 ```terminal
-python3 cinecli.py --urls --images elcairo upcoming
+python3 cinecli.py --images elcairo day --date 16-02-2023
 ```
-![scrotFeb07193215](https://user-images.githubusercontent.com/52180403/217381710-9058e282-6213-42d6-82f3-16e1b4fecaea.png)
+![scrotFeb15233631](https://user-images.githubusercontent.com/52180403/219253983-7aac2088-0e9f-4818-9818-b5cbcdad3a0d.png)
 
 # Future
 ## General
@@ -78,8 +77,7 @@ python3 cinecli.py --urls --images elcairo upcoming
 - [X] Decide how to 'Standarize' the data in the extra info.
 - [X] Testing, error handling. (Overall it works, if nothing breaks I'll do nothing)
 - [X] Populate a sqlite db, fetching the .ics files takes too long.
-- [ ] Api documentation.
-- [ ] virtualenv?
+- [ ] Virtualenv.
 - [ ] Support notifications.
 - [ ] Support other cinemas.
 
