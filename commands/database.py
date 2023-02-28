@@ -6,17 +6,16 @@ import json
 import os
 import shutil
 import sqlite3
+import threading
+from time import sleep
 
 import arrow
 import click
 import climage
 import requests
+from progress.spinner import MoonSpinner
 
 from apis.elcairo import ElCairo
-
-###########################################################################
-# Functions to populate the database
-###########################################################################
 
 
 def get_ascii_image(url: str, uid: str) -> str:
@@ -44,31 +43,49 @@ def get_ascii_image(url: str, uid: str) -> str:
     return output
 
 
+def loading(task: str, thread: threading.Thread) -> None:
+    """
+    Echo a task with a spinner
+    """
+    with MoonSpinner(task + "...  ") as spinner:
+        while thread.is_alive():
+            sleep(0.1)
+            spinner.next()
+
+
 @click.group()
-def database() -> None:
+@click.option("--silent", is_flag=True, show_default=True)
+@click.pass_context
+def database(ctx, silent) -> None:
     """
     Populate or clean the database.
     """
+    ctx.obj["silent"] = silent
 
 
 @database.command()
-def populate() -> None:
+@click.pass_context
+def populate(ctx) -> None:
     """
     Populate the database.
     """
+    if not ctx.obj["silent"]:
+        click.echo("📽️ Executing tasks 📽️")
+
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "..", "cinecli.db")
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
         except OSError as _:
-            click.echo("Cannot remove cinecli.db, try again...")
+            if not ctx.obj["silent"]:
+                click.echo("Cannot remove cinecli.db, try again...")
 
     connection = sqlite3.connect("cinecli.db")
 
     cursor = connection.cursor()
 
-    create_query: str = """
+    create_query = """
     CREATE TABLE IF NOT EXISTS movies (
         movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -88,32 +105,68 @@ def populate() -> None:
         cinema TEXT NOT NULL
     );"""
 
+    if not ctx.obj["silent"]:
+        click.echo("Creating the table...")
+
     cursor.execute(create_query)
 
-    elcairo: ElCairo = ElCairo()
-    events_dict = json.loads(elcairo.get_upcoming_shows_json())
+    def get_events(events_dict: dict):
+        elcairo: ElCairo = ElCairo()
+        events_dict.update(json.loads(elcairo.get_upcoming_shows_json()))
+
+    events_dict: dict = {}
+    thread_fetch: threading.Thread = threading.Thread(
+        target=get_events, args=(events_dict,)
+    )
+
+    thread_fetch.start()
+
+    if not ctx.obj["silent"]:
+        # This will wait for thread to finish
+        loading("Fetching data", thread_fetch)
+
+    # If you go silent wait for the thread, anyway close the thread safely
+    thread_fetch.join()
+
+    if not ctx.obj["silent"]:
+        click.echo(f"Fetched {len(events_dict)} movies...")
+
+    def create_events(events_dict: dict, data_insert: list):
+        for uid, movie_data in events_dict.items():
+            event = (
+                movie_data["name"],
+                str(arrow.get(movie_data["date"])),
+                int(arrow.get(movie_data["date"]).format("YYYYMMDD")),
+                movie_data["synopsis"],
+                movie_data["direction"],
+                movie_data["cast"],
+                movie_data["genre"],
+                movie_data["duration"],
+                movie_data["origin"],
+                movie_data["year"],
+                movie_data["age"],
+                movie_data["cost"],
+                get_ascii_image(movie_data["image_url"], uid),
+                " ".join(movie_data["urls"]),
+                "elcairo",
+            )
+            data_insert.append(event)
 
     data_insert: list = []
+    thread_events: threading.Thread = threading.Thread(
+        target=create_events,
+        args=(
+            events_dict,
+            data_insert,
+        ),
+    )
 
-    for uid, movie_data in events_dict.items():
-        event = (
-            movie_data["name"],
-            str(arrow.get(movie_data["date"])),
-            int(arrow.get(movie_data["date"]).format("YYYYMMDD")),
-            movie_data["synopsis"],
-            movie_data["direction"],
-            movie_data["cast"],
-            movie_data["genre"],
-            movie_data["duration"],
-            movie_data["origin"],
-            movie_data["year"],
-            movie_data["age"],
-            movie_data["cost"],
-            get_ascii_image(movie_data["image_url"], uid),
-            " ".join(movie_data["urls"]),
-            "elcairo",
-        )
-        data_insert.append(event)
+    thread_events.start()
+
+    if not ctx.obj["silent"]:
+        loading("Creating events", thread_events)
+
+    thread_events.join()
 
     cursor.executemany(
         """
@@ -137,21 +190,37 @@ def populate() -> None:
         data_insert,
     )
 
+    if not ctx.obj["silent"]:
+        click.echo("Populating the table...")
+
     connection.commit()
+
+    if not ctx.obj["silent"]:
+        click.echo("📽️ All finished 📽️")
 
 
 @database.command()
-def clean() -> None:
+@click.pass_context
+def clean(ctx) -> None:
     """
     Clean the database.
     """
+    if not ctx.obj["silent"]:
+        click.echo("📽️ Executing tasks 📽️")
+        click.echo("Deleting the database...")
+
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "..", "cinecli.db")
     if not os.path.exists(database_file):
-        click.echo("The database does not exists!")
+        if not ctx.obj["silent"]:
+            click.echo("The database does not exists!")
         return
 
     try:
         os.remove(database_file)
     except OSError as _:
-        click.echo("Cannot remove cinecli.db, try again...")
+        if not ctx.obj["silent"]:
+            click.echo("Cannot remove cinecli.db, try again...")
+
+    if not ctx.obj["silent"]:
+        click.echo("📽️ All finished 📽️")
