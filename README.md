@@ -6,7 +6,7 @@ que es lo que van a pasar, y de paso nunca la entiendo.
 ## Dependencies
 
 ```terminal
-pip install ics icalendar climage requests colorama click arrow beautifulsoup4
+pip install ics icalendar climage requests colorama click arrow beautifulsoup4 progress
 ```
 
 ## Run
