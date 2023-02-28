@@ -7,6 +7,7 @@ import os
 import shutil
 import sqlite3
 import threading
+from functools import partial
 from time import sleep
 
 import arrow
@@ -60,7 +61,17 @@ def database(ctx, silent) -> None:
     """
     Populate or clean the database.
     """
+    if not silent:
+        click.echo("📽️ Executing tasks 📽️")
+
     ctx.obj["silent"] = silent
+
+    def bye_msg(silent):
+        if not silent:
+            click.echo("📽️ All finished 📽️")
+
+    bye_call = partial(bye_msg, silent)
+    ctx.call_on_close(bye_call)
 
 
 @database.command()
@@ -69,19 +80,17 @@ def populate(ctx) -> None:
     """
     Populate the database.
     """
-    if not ctx.obj["silent"]:
-        click.echo("📽️ Executing tasks 📽️")
-
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "..", "cinecli.db")
+    database_file: str = os.path.join(script_dir, "cinecli.db")
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
         except OSError as _:
             if not ctx.obj["silent"]:
                 click.echo("Cannot remove cinecli.db, try again...")
+            ctx.exit(1)
 
-    connection = sqlite3.connect("cinecli.db")
+    connection = sqlite3.connect(database_file)
 
     cursor = connection.cursor()
 
@@ -106,6 +115,7 @@ def populate(ctx) -> None:
     );"""
 
     if not ctx.obj["silent"]:
+        click.echo(f"Using database {database_file}")
         click.echo("Creating the table...")
 
     cursor.execute(create_query)
@@ -195,9 +205,6 @@ def populate(ctx) -> None:
 
     connection.commit()
 
-    if not ctx.obj["silent"]:
-        click.echo("📽️ All finished 📽️")
-
 
 @database.command()
 @click.pass_context
@@ -206,21 +213,18 @@ def clean(ctx) -> None:
     Clean the database.
     """
     if not ctx.obj["silent"]:
-        click.echo("📽️ Executing tasks 📽️")
         click.echo("Deleting the database...")
 
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "..", "cinecli.db")
+    database_file: str = os.path.join(script_dir, "cinecli.db")
     if not os.path.exists(database_file):
         if not ctx.obj["silent"]:
             click.echo("The database does not exists!")
-        return
+        ctx.exit(1)
 
     try:
         os.remove(database_file)
     except OSError as _:
         if not ctx.obj["silent"]:
             click.echo("Cannot remove cinecli.db, try again...")
-
-    if not ctx.obj["silent"]:
-        click.echo("📽️ All finished 📽️")
+        ctx.exit(1)
