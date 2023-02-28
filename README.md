@@ -79,19 +79,10 @@ python3 cinecli.py --images elcairo day --date 16-02-2023
 - [X] Populate a sqlite db, fetching the .ics files takes too long.
 - [ ] Virtualenv.
 - [ ] Support notifications.
-- [ ] Support other cinemas.
+- [ ] Support other cinemas: Arteón, Monumental, Showcase, etc.
 
-## ElCairo
+## El Cairo
 - [X] Error handling for dates without shows.
 - [X] Understand a little more of what I'm retrieving with that .ics file.
 - [X] Date sorting (Default: closest shows last).
 - [X] Scrap the info url to get more information in the API, e.g the duration of the film.
-
-## Showcase
-- [ ] Scrap tf out.
-
-## Arteón
-- [ ] Scrap tf out.
-
-## Monumental
-- [ ] Scrap tf out.
