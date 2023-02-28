@@ -58,7 +58,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
 ```
 
 ### Example
-(https://github.com/pablos123/cinecli/wiki/El-Cairo-API-example)[El Cairo API]
+![El Cairo API](https://github.com/pablos123/cinecli/wiki/El-Cairo-API-example)
 
 En este momento la API del cairo está impletada leyendo archivos .ics que El Cario provee en la página.
 De otros cines no encontré nada parecido, así que voy a scrapear las páginas.
