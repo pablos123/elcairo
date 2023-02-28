@@ -52,7 +52,7 @@ Cada cine tendrá su API, cada API, cuando se consulte, devolverá un json del t
     "year": "<year>",
     "age": "<age restriction>",
     "cost": "<cost>",
-    "image_url": "<image url to render it in the terminal>"
+    "image_url": "<image url>"
   }
 }
 ```
