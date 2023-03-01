@@ -15,7 +15,7 @@ Populate the database:
 python3 cinecli.py database populate
 ```
 
-Show movie shows:
+Print movie shows:
 ```terminal
 python3 cinecli.py --images --urls elcairo today
 ```
