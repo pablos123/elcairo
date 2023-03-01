@@ -1,5 +1,4 @@
-cinecli_path="$HOME/cinecli"
-delay=2
+elcairo_delay=2
 elcairo_movies_today=$(python3 "$cinecli_path/cinecli.py" --no_extra_info elcairo today)
 ( ( echo "notify-send --icon=$cinecli_path/icons/elcairo.png --expire-time=600000 \"📽️ El Cairo Movies today 📽️\" \"" &&
     if [ -n "$elcairo_movies_today" ]; then
@@ -7,4 +6,4 @@ elcairo_movies_today=$(python3 "$cinecli_path/cinecli.py" --no_extra_info elcair
     else
         echo "  No movies today 😔";
     fi &&
-        echo '"' ) | at "now + $delay minutes") > /dev/null 2>1
+        echo '"' ) | at "now + $elcairo_delay minutes") > /dev/null 2>1
