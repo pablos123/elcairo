@@ -1,2 +1,5 @@
 __pycache__
 cinecli.db
+build/
+cinecli.egg-info/
+pyproject.toml
