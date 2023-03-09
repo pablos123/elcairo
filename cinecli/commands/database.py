@@ -16,7 +16,7 @@ import climage
 import requests
 from progress.spinner import MoonSpinner
 
-from apis.elcairo import ElCairo
+from ..apis.elcairo import ElCairo
 
 
 def get_ascii_image(url: str, uid: str) -> str:

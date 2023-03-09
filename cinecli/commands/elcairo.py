@@ -10,7 +10,7 @@ import arrow
 import click
 from arrow import Arrow
 
-from commands.lib.movie_printer import MoviePrinter
+from .lib.movie_printer import MoviePrinter
 
 
 @click.group()
