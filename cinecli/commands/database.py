@@ -60,7 +60,7 @@ def loading(task: str, thread: threading.Thread) -> None:
 @click.pass_context
 def database(ctx, silent) -> None:
     """
-    Populate or clean the database.
+    Database operations.
     """
     if not silent:
         click.echo("📽️ Executing tasks 📽️")
@@ -112,7 +112,6 @@ def populate(ctx) -> None:
         cost TEXT NOT NULL,
         image TEXT NOT NULL,
         urls TEXT NOT NULL,
-        cinema TEXT NOT NULL
     );"""
 
     if not ctx.obj["silent"]:
@@ -160,7 +159,6 @@ def populate(ctx) -> None:
                 movie_data["cost"],
                 get_ascii_image(movie_data["image_url"], uid),
                 " ".join(movie_data["urls"]),
-                "elcairo",
             )
             data_insert.append(event)
 
@@ -196,9 +194,9 @@ def populate(ctx) -> None:
             'age',
             'cost',
             'image',
-            'urls',
-            'cinema')
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+            'urls'
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
         data_insert,
     )
 

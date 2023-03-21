@@ -1,8 +1,11 @@
-"""Print Rosario's cinemas shows information"""
+"""
+Print Rosario's cinemas shows information
+"""
+
 import click
 
-from .commands.elcairo import elcairo
 from .commands.database import database
+from .commands.elcairo import day, today, tomorrow, until, upcoming, week
 
 
 @click.group()
@@ -14,15 +17,21 @@ from .commands.database import database
 @click.pass_context
 def cinecli(ctx, images, no_extra_info, urls):
     """
-    Command line interface for Rosario's cinemas shows information.
+    Command line interface for El Cairo cinema.
     """
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
     ctx.obj["urls"] = urls
 
 
-cinecli.add_command(elcairo)
+cinecli.add_command(today)
+cinecli.add_command(tomorrow)
+cinecli.add_command(week)
+cinecli.add_command(day)
+cinecli.add_command(until)
+cinecli.add_command(upcoming)
 cinecli.add_command(database)
+
 
 def main():
     """
