@@ -46,4 +46,4 @@ cinecli --images --urls day --date 16-02-2023
 
 
 ### Disclaimer
-I thought of supporting another cinemas but none of them provides a clean web interface to even do some scrapping. I will not support another cinemas.
+I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
