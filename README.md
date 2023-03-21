@@ -16,7 +16,7 @@ Requires Python >=3.10.
 ```terminal
 pix uninstall
 pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
-
+```
 
 ### Run
 Populate the database:
