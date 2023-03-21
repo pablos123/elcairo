@@ -42,7 +42,8 @@ class MoviePrinter:
         Print a list of movies
         """
 
-        if not movies:
+        click.echo(movies)
+        if movies == []:
             click.echo("No movies to show 😔")
             return
 
