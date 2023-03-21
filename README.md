@@ -14,7 +14,7 @@ Requires Python >=3.10.
 
 ### Update
 ```terminal
-pipx uninstall
+pipx uninstall cinecli
 pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
 
