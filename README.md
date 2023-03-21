@@ -8,10 +8,15 @@ que es lo que van a pasar y de paso nunca la entiendo.
 ```terminal
 sudo apt install python3.10-venv
 python3 -m pip install --user pipx && python3 -m pipx ensurepath
-pipx install git+https://github.com/pablos123/cinecli.git
+pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
-
 Requires Python >=3.10.
+
+### Update
+```terminal
+pipx uninstall cinecli
+pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
+```
 
 ### Run
 Populate the database:
@@ -44,6 +49,4 @@ cinecli --images --urls day --date 16-02-2023
 ## More info:
 ![cinecli wiki](https://github.com/pablos123/cinecli/wiki)
 
-
-### Disclaimer
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
