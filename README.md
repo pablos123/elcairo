@@ -1,12 +1,14 @@
 # cinecli
 
 Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz de mierda a fijarme
-que es lo que van a pasar, y de paso nunca la entiendo.
+que es lo que van a pasar y de paso nunca la entiendo.
 
 ## Quickstart
 ### Install
 ```terminal
-python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install git+https://github.com/pablos123/cinecli.git
+sudo apt install python3.10-venv
+python3 -m pip install --user pipx && python3 -m pipx ensurepath
+pipx install git+https://github.com/pablos123/cinecli.git
 ```
 
 Requires Python >=3.10.
