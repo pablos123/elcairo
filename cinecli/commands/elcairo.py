@@ -1,16 +1,20 @@
 """
-El Cairo command.
+El Cairo command group.
 """
 
 import os
 import sqlite3
+import sys
 from sqlite3.dbapi2 import Connection
 
 import arrow
 import click
 from arrow import Arrow
 
+from .lib.database_utils import query_eq, query_leq
 from .lib.movie_printer import MoviePrinter
+
+TODAY: int = int(arrow.now().format("YYYYMMDD"))
 
 
 @click.group()
@@ -19,7 +23,6 @@ def elcairo(ctx) -> None:
     """
     Print El Cairo movie shows.
     """
-
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "cinecli.db")
 
@@ -45,40 +48,43 @@ def today(ctx) -> None:
     """
     Print todays movie shows.
     """
-
-    date_int: int = int(arrow.now().format("YYYYMMDD"))
-
-    try:
-        res = ctx.obj["cursor"].execute(
-            f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date = {date_int};"
-        )
-        todays_shows = [dict(row) for row in res.fetchall()]
-        ctx.obj["printer"].echo_list(todays_shows)
-    except sqlite3.OperationalError as _:
-        click.echo(
-            "There is something wrong with the database, populate again...")
-        ctx.exit(1)
+    movies: list = query_eq(ctx.obj["cursor"], "elcairo", TODAY)
+    ctx.obj["printer"].echo_list(movies)
 
 
 @elcairo.command()
 @click.pass_context
-def upcoming(ctx) -> None:
+def tomorrow(ctx) -> None:
     """
-    Print upcoming movie shows.
+    Print tomorrow movie shows.
+    """
+    date_int: int = int(arrow.now().dehumanize(
+        "next sunday").format("YYYYMMDD"))
+    movies: list = query_eq(ctx.obj["cursor"], "elcairo", date_int)
+    ctx.obj["printer"].echo_list(movies)
+
+
+@elcairo.command()
+@click.pass_context
+def week(ctx) -> None:
+    """
+    Print the movie shows until the next sunday.
     """
 
-    date_int: int = int(arrow.now().format("YYYYMMDD"))
+    def get_next_sunday() -> int:
+        """
+        Returns the int representation of the next sunday.
+        """
+        date = arrow.now()
+        while date.weekday() != 0:
+            date = date.dehumanize("in a day")
+        return int(date.format("YYYYMMDD"))
 
-    try:
-        res = ctx.obj["cursor"].execute(
-            f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date >= {date_int};"
-        )
-        upcoming_shows = [dict(row) for row in res.fetchall()]
-        ctx.obj["printer"].echo_list(upcoming_shows)
-    except sqlite3.OperationalError as _:
-        click.echo(
-            "There is something wrong with the database, populate again...")
-        ctx.exit(1)
+    date_int: int = get_next_sunday()
+    movies: list = query_leq(
+        ctx.obj["cursor"], "elcairo", date_int_min=TODAY, date_int_max=date_int
+    )
+    ctx.obj["printer"].echo_list(movies)
 
 
 @elcairo.command()
@@ -88,25 +94,14 @@ def day(ctx, date) -> None:
     """
     Print movie shows of a given date.
     """
-
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
 
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-
     date_int: int = int(date_arrow.format("YYYYMMDD"))
-
-    try:
-        res = ctx.obj["cursor"].execute(
-            f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date = {date_int};"
-        )
-        day_shows = [dict(row) for row in res.fetchall()]
-        ctx.obj["printer"].echo_list(day_shows)
-    except sqlite3.OperationalError as _:
-        click.echo(
-            "There is something wrong with the database, populate again...")
-        ctx.exit(1)
+    movies: list = query_eq(ctx.obj["cursor"], "elcairo", date_int)
+    ctx.obj["printer"].echo_list(movies)
 
 
 @elcairo.command()
@@ -116,22 +111,25 @@ def until(ctx, date) -> None:
     """
     Print movie shows until a given date.
     """
-
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
 
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-
     date_int: int = int(date_arrow.format("YYYYMMDD"))
+    movies: list = query_leq(
+        ctx.obj["cursor"], "elcairo", date_int_min=TODAY, date_int_max=date_int
+    )
+    ctx.obj["printer"].echo_list(movies)
 
-    try:
-        res = ctx.obj["cursor"].execute(
-            f"SELECT * FROM movies WHERE cinema='elcairo' AND compare_date <= {date_int};"
-        )
-        day_shows = [dict(row) for row in res.fetchall()]
-        ctx.obj["printer"].echo_list(day_shows)
-    except sqlite3.OperationalError as _:
-        click.echo(
-            "There is something wrong with the database, populate again...")
-        ctx.exit(1)
+
+@elcairo.command()
+@click.pass_context
+def upcoming(ctx) -> None:
+    """
+    Print upcoming movie shows.
+    """
+    movies: list = query_leq(
+        ctx.obj["cursor"], "elcairo", date_int_min=TODAY, date_int_max=sys.maxsize
+    )
+    ctx.obj["printer"].echo_list(movies)

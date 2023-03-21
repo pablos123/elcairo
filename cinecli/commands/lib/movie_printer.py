@@ -37,7 +37,7 @@ class MoviePrinter:
         self.no_extra_info = no_extra_info
         self.urls = urls
 
-    def echo_list(self, movies: dict) -> None:
+    def echo_list(self, movies: list) -> None:
         """
         Print a list of movies
         """
