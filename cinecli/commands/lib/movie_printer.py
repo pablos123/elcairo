@@ -42,6 +42,10 @@ class MoviePrinter:
         Print a list of movies
         """
 
+        if not movies:
+            click.echo("No movies to show 😔")
+            return
+
         for movie in movies:
             click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
