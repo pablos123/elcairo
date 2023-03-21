@@ -111,7 +111,7 @@ def populate(ctx) -> None:
         age TEXT NOT NULL,
         cost TEXT NOT NULL,
         image TEXT NOT NULL,
-        urls TEXT NOT NULL,
+        urls TEXT NOT NULL
     );"""
 
     if not ctx.obj["silent"]:
