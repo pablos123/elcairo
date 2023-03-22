@@ -12,10 +12,6 @@ sudo apt install python3.10-venv
 python3 -m pip install --user pipx && python3 -m pipx ensurepath
 pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
-**Update**: `pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate`
-
-**Uninstall**: `pipx uninstall cinecli`
-
 > Requires Python >=3.10.
 
 ### Run
@@ -38,5 +34,15 @@ cinecli --images --urls day --date 16-02-2023
 
 ## More info:
 ![cinecli wiki](https://github.com/pablos123/cinecli/wiki)
+
+**Update**
+```terminal
+pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
+```
+
+**Uninstall**
+```terminal
+pipx uninstall cinecli
+```
 
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
