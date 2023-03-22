@@ -19,8 +19,8 @@ setup(
         "cinecli.commands.lib",
         "cinecli.commands.lib.movie_printer",
         "cinecli.commands.lib.database_utils",
-        "cinecli.apis",
-        "cinecli.apis.elcairo",
+        "cinecli.api",
+        "cinecli.api.elcairo",
     ],
     python_requires=">=3.10",
     install_requires=[

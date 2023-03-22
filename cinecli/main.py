@@ -1,5 +1,5 @@
 """
-Print Rosario's cinemas shows information
+Print El Cairo cinema shows information
 """
 
 import click
