@@ -13,6 +13,7 @@ python3 -m pip install --user pipx && python3 -m pipx ensurepath
 pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
 **Update**: `pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate`
+
 **Uninstall**: `pipx uninstall cinecli`
 
 > Requires Python >=3.10.
