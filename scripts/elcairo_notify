@@ -1,9 +1,0 @@
-elcairo_delay=2
-elcairo_movies_today=$(cinecli --no_extra_info elcairo today)
-( ( echo "notify-send --icon=$cinecli_path/icons/elcairo.png --expire-time=600000 \"📽️ El Cairo movies today 📽️\" \"" &&
-    if [ -n "$elcairo_movies_today" ]; then
-        echo "$elcairo_movies_today";
-    else
-        echo "  No movies today 😔";
-    fi &&
-        echo '"' ) | at "now + $elcairo_delay minutes") > /dev/null 2>&1
