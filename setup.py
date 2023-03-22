@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
     name="cinecli",
-    version="0.2.0",
+    version="1.0.0",
     description="Cli program that shows movies available for watching in El Cario cinema",
     author="Pablo Saavedra",
     url="https://github.com/pablos123/cinecli",
