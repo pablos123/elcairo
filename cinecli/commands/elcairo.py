@@ -45,7 +45,7 @@ def get_next_sunday() -> int:
     Returns the int representation of the next sunday.
     """
     date = arrow.now()
-    while date.weekday() != 0:
+    while date.weekday() != 6:
         date = date.dehumanize("in a day")
     return int(date.format("YYYYMMDD"))
 
@@ -55,7 +55,7 @@ def get_next_saturday() -> int:
     Returns the int representation of the next saturday.
     """
     date = arrow.now()
-    while date.weekday() != 6:
+    while date.weekday() != 5:
         date = date.dehumanize("in a day")
     return int(date.format("YYYYMMDD"))
 
