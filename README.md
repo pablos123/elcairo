@@ -19,17 +19,6 @@ pipx install git+https://github.com/pablos123/cinecli.git && cinecli database po
 ```
 
 ### Run
-Populate the database:
-```terminal
-cinecli database populate
-```
-
-Print movie shows:
-```terminal
-cinecli --images --urls today
-```
-
-More commands:
 ```terminal
 cinecli --help
 ```
