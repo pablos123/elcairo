@@ -14,11 +14,8 @@ pipx install git+https://github.com/pablos123/cinecli.git && cinecli database po
 ```
 Requires Python >=3.10.
 
-### Update
-```terminal
-pipx uninstall cinecli
-pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
-```
+**Update**: `pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate`
+**Uninstall**: `pipx uninstall cinecli`
 
 ### Run
 ```terminal
