@@ -18,7 +18,7 @@ TODAY: int = int(arrow.now().format("YYYYMMDD"))
 
 def cursor_printer_init(ctx):
     """
-    Initialize the cursor and the printer
+    Initialize the cursor and the printer.
     """
     script_dir = os.path.realpath(os.path.dirname(__file__))
     database_file = os.path.join(script_dir, "cinecli.db")
@@ -64,7 +64,7 @@ def get_next_saturday() -> int:
 @click.pass_context
 def today(ctx) -> None:
     """
-    Print todays movie shows.
+    Today's movie shows.
     """
     cursor_printer_init(ctx)
     movies: list = query_eq(ctx.obj["cursor"], TODAY)
@@ -75,7 +75,7 @@ def today(ctx) -> None:
 @click.pass_context
 def tomorrow(ctx) -> None:
     """
-    Print tomorrow movie shows.
+    Tomorrow's movie shows.
     """
     cursor_printer_init(ctx)
     date_int: int = int(arrow.now().dehumanize("in a day").format("YYYYMMDD"))
@@ -87,7 +87,7 @@ def tomorrow(ctx) -> None:
 @click.pass_context
 def week(ctx) -> None:
     """
-    Print the movie shows until the next sunday.
+    Movie shows until next sunday.
     """
     cursor_printer_init(ctx)
     date_int: int = get_next_sunday()
@@ -101,7 +101,7 @@ def week(ctx) -> None:
 @click.pass_context
 def weekend(ctx) -> None:
     """
-    Print the movie shows of the next weekend.
+    This weekend's movie shows.
     """
     cursor_printer_init(ctx)
 
@@ -118,7 +118,7 @@ def weekend(ctx) -> None:
 @click.pass_context
 def day(ctx, date) -> None:
     """
-    Print movie shows of a given date.
+    Movie shows of a given date.
     """
     cursor_printer_init(ctx)
     year: str = str(date.year).zfill(4)
@@ -136,7 +136,7 @@ def day(ctx, date) -> None:
 @click.pass_context
 def until(ctx, date) -> None:
     """
-    Print movie shows until a given date.
+    Movie shows until a given date.
     """
     cursor_printer_init(ctx)
     year: str = str(date.year).zfill(4)
@@ -155,7 +155,7 @@ def until(ctx, date) -> None:
 @click.pass_context
 def upcoming(ctx) -> None:
     """
-    Print upcoming movie shows.
+    Upcoming movie shows.
     """
     cursor_printer_init(ctx)
     movies: list = query_leq(
