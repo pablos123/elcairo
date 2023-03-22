@@ -25,6 +25,7 @@ cinecli --help
 
 ## Linux ecosystem
 ### Automate the database population
+![Automate population!](https://github.com/pablos123/cinecli/wiki/Automate-population!)
 
 ### Desktop notifications
 ![Get notified!](https://github.com/pablos123/cinecli/wiki/Get-notified!)
