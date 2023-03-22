@@ -101,7 +101,7 @@ def week(ctx) -> None:
 @click.pass_context
 def weekend(ctx) -> None:
     """
-    Print the movie shows until the next sunday.
+    Print the movie shows until the next weekend.
     """
     cursor_printer_init(ctx)
 
