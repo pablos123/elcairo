@@ -26,12 +26,6 @@ cinecli --help
 ### Desktop notifications
 ![Get notified!](https://github.com/pablos123/cinecli/wiki/Get-notified!)
 
-## Screenshots
-```terminal
-cinecli --images --urls day --date 16-02-2023
-```
-![some_movie](https://user-images.githubusercontent.com/52180403/219253983-7aac2088-0e9f-4818-9818-b5cbcdad3a0d.png)
-
 ## More info:
 ![cinecli wiki](https://github.com/pablos123/cinecli/wiki)
 
@@ -46,3 +40,9 @@ pipx uninstall cinecli
 ```
 
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
+
+## Screenshots
+```terminal
+cinecli --images --urls day --date 16-02-2023
+```
+![some_movie](https://user-images.githubusercontent.com/52180403/219253983-7aac2088-0e9f-4818-9818-b5cbcdad3a0d.png)
