@@ -40,6 +40,26 @@ def cursor_printer_init(ctx):
     )
 
 
+def get_next_sunday() -> int:
+    """
+    Returns the int representation of the next sunday.
+    """
+    date = arrow.now()
+    while date.weekday() != 0:
+        date = date.dehumanize("in a day")
+    return int(date.format("YYYYMMDD"))
+
+
+def get_next_saturday() -> int:
+    """
+    Returns the int representation of the next saturday.
+    """
+    date = arrow.now()
+    while date.weekday() != 7:
+        date = date.dehumanize("in a day")
+    return int(date.format("YYYYMMDD"))
+
+
 @click.command()
 @click.pass_context
 def today(ctx) -> None:
@@ -70,19 +90,25 @@ def week(ctx) -> None:
     Print the movie shows until the next sunday.
     """
     cursor_printer_init(ctx)
-
-    def get_next_sunday() -> int:
-        """
-        Returns the int representation of the next sunday.
-        """
-        date = arrow.now()
-        while date.weekday() != 0:
-            date = date.dehumanize("in a day")
-        return int(date.format("YYYYMMDD"))
-
     date_int: int = get_next_sunday()
     movies: list = query_leq(
         ctx.obj["cursor"], date_int_min=TODAY, date_int_max=date_int
+    )
+    ctx.obj["printer"].echo_list(movies)
+
+
+@click.command()
+@click.pass_context
+def weekend(ctx) -> None:
+    """
+    Print the movie shows until the next sunday.
+    """
+    cursor_printer_init(ctx)
+
+    date_int_min: int = get_next_saturday()
+    date_int_max: int = get_next_sunday()
+    movies: list = query_leq(
+        ctx.obj["cursor"], date_int_min=date_int_min, date_int_max=date_int_max
     )
     ctx.obj["printer"].echo_list(movies)
 
