@@ -5,7 +5,7 @@ Print El Cairo cinema shows information
 import click
 
 from .commands.database import database
-from .commands.elcairo import day, today, tomorrow, until, upcoming, week
+from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weekend
 
 
 @click.group()
@@ -31,13 +31,14 @@ def cinecli(ctx, images, no_extra_info, no_separator, urls):
     ctx.obj["urls"] = urls
 
 
+cinecli.add_command(database)
+cinecli.add_command(day)
 cinecli.add_command(today)
 cinecli.add_command(tomorrow)
-cinecli.add_command(week)
-cinecli.add_command(day)
 cinecli.add_command(until)
 cinecli.add_command(upcoming)
-cinecli.add_command(database)
+cinecli.add_command(week)
+cinecli.add_command(weekend)
 
 
 def main():
