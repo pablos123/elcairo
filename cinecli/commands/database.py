@@ -55,7 +55,7 @@ def loading(task: str, thread: threading.Thread) -> None:
 
 
 @click.group()
-@click.option("--silent", is_flag=True, show_default=True)
+@click.option("--silent", help="Don't print anything.", is_flag=True, show_default=True)
 @click.pass_context
 def database(ctx, silent) -> None:
     """
