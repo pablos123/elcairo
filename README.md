@@ -7,6 +7,7 @@ Esto viene a salvarme las papas porque cuando quiero me fijo que hay y organizo 
 
 ## Quickstart
 ### Install
+
 ```terminal
 sudo apt install python3.10-venv
 python3 -m pip install --user pipx && python3 -m pipx ensurepath
@@ -38,6 +39,10 @@ pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.
 ```terminal
 pipx uninstall cinecli
 ```
+
+**`pipx` docs**
+
+https://pypa.github.io/pipx/installation/
 
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
 
