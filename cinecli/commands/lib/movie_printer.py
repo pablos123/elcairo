@@ -32,9 +32,10 @@ class MoviePrinter:
     Movie printing utilities for echoing with click.
     """
 
-    def __init__(self, images: bool, no_extra_info: bool, urls: bool):
+    def __init__(self, images: bool, no_extra_info: bool, no_separator: bool, urls: bool):
         self.images = images
         self.no_extra_info = no_extra_info
+        self.no_separator = no_separator
         self.urls = urls
 
     def echo_list(self, movies: list) -> None:
@@ -47,7 +48,10 @@ class MoviePrinter:
             return
 
         for movie in movies:
-            click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
+
+            if not self.no_separator:
+                click.echo(
+                    f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
             self.echo_title(movie)
 

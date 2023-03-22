@@ -35,6 +35,7 @@ def cursor_printer_init(ctx):
     ctx.obj["printer"] = MoviePrinter(
         images=ctx.obj["images"],
         no_extra_info=ctx.obj["no_extra_info"],
+        no_separator=ctx.obj["no_separator"],
         urls=ctx.obj["urls"],
     )
 

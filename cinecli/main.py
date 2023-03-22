@@ -13,14 +13,21 @@ from .commands.elcairo import day, today, tomorrow, until, upcoming, week
 @click.option(
     "--no_extra_info", help="Don't show extra info.", is_flag=True, show_default=True
 )
+@click.option(
+    "--no_separator",
+    help="Don't show the separator between movies.",
+    is_flag=True,
+    show_default=True,
+)
 @click.option("--urls", help="Show urls.", is_flag=True, show_default=True)
 @click.pass_context
-def cinecli(ctx, images, no_extra_info, urls):
+def cinecli(ctx, images, no_extra_info, no_separator, urls):
     """
     Command line interface for El Cairo cinema.
     """
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
+    ctx.obj["no_separator"] = no_separator
     ctx.obj["urls"] = urls
 
 
