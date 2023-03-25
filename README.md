@@ -9,7 +9,7 @@ Esto viene a salvarme las papas porque cuando quiero me fijo que hay y organizo 
 ### Install
 
 ```terminal
-sudo apt install python3.10-venv
+sudo apt install python3-venv
 python3 -m pip install --user pipx && python3 -m pipx ensurepath
 pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
@@ -22,8 +22,7 @@ cinecli --help
 
 ## Linux ecosystem
 ### Automate the database population
-![Automate database population!](https://github.com/pablos123/cinecli/wiki/Automate-population!)
-
+![Automate database population!](https://github.com/pablos123/cinecli/wiki/Automate-database-population!)
 ### Desktop notifications
 ![Get notified!](https://github.com/pablos123/cinecli/wiki/Get-notified!)
 
