@@ -22,9 +22,8 @@ from .commands.version import version
 )
 @click.option("--urls", help="Show urls.", is_flag=True, show_default=True)
 @click.option("--reverse", help="Reverse order.", is_flag=True, show_default=True)
-@click.option("--version", help="Print version", is_flag=True, show_default=True)
 @click.pass_context
-def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse, version):
+def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse):
     """
     Command line interface for El Cairo cinema.
     """

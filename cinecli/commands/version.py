@@ -1,6 +1,6 @@
 import click
 
-from ..version import __version__
+from ..__version__ import __version__
 
 @click.command()
 def version() -> None:
