@@ -4,7 +4,7 @@ Setup function
 
 from setuptools import setup
 
-from cinecli.commands.version import __version__
+from cinecli.version import __version__
 
 setup(
     name="cinecli",
@@ -15,6 +15,7 @@ setup(
     author_email="pablosaavedra123@gmail.com",
     py_modules=[
         "cinecli.main",
+        "cinecli.version",
         "cinecli.commands",
         "cinecli.commands.version",
         "cinecli.commands.elcairo",
