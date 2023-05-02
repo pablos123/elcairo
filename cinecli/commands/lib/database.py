@@ -6,7 +6,7 @@ import sqlite3
 
 
 def query_leq(
-    cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int
+    cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order="DESC"
 ) -> list:
     """
     Execute query.
@@ -16,17 +16,17 @@ def query_leq(
         res = cursor.execute(
             f"""
             SELECT * FROM movies WHERE compare_date >= {date_int_min} AND
-            compare_date <= {date_int_max};
+            compare_date <= {date_int_max} ORDER BY compare_date {order};
             """
         )
         movies = [dict(row) for row in res.fetchall()]
-    except sqlite3.OperationalError as _:
+    except sqlite3.OperationalError:
         pass
 
     return movies
 
 
-def query_eq(cursor: sqlite3.Cursor, date_int: int) -> list:
+def query_eq(cursor: sqlite3.Cursor, date_int: int, order="DESC") -> list:
     """
     Execute query.
     """
@@ -34,11 +34,12 @@ def query_eq(cursor: sqlite3.Cursor, date_int: int) -> list:
     try:
         res = cursor.execute(
             f"""
-            SELECT * FROM movies WHERE compare_date = {date_int};
+            SELECT * FROM movies WHERE compare_date = {date_int}
+            ORDER BY compare_date {order};
             """
         )
         movies = [dict(row) for row in res.fetchall()]
-    except sqlite3.OperationalError as _:
+    except sqlite3.OperationalError:
         pass
 
     return movies

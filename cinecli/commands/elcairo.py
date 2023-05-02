@@ -10,7 +10,7 @@ import arrow
 import click
 from arrow import Arrow
 
-from .lib.database_utils import query_eq, query_leq
+from .lib.database import query_eq, query_leq
 from .lib.movie_printer import MoviePrinter
 
 TODAY: int = int(arrow.now().format("YYYYMMDD"))

@@ -18,7 +18,7 @@ class ElCairo:
     Get El Cairo cinema shows information.
     """
 
-    def events_to_json(self, events: Set[Event], reverse: bool = True) -> str:
+    def events_to_json(self, events: Set[Event]) -> str:
         """
         Returns a json of events. The latest first. This method scraps for
         more info in the specified event url.
@@ -61,8 +61,7 @@ class ElCairo:
             events_dict[event.uid] = parsed_dict
 
         sorted_list: list = sorted(
-            events_dict.items(), key=lambda x: x[1]["date"], reverse=reverse
-        )
+            events_dict.items(), key=lambda x: x[1]["date"])
         sorted_dict: dict = dict(sorted_list)
         return json.dumps(sorted_dict)
 
@@ -148,29 +147,29 @@ class ElCairo:
     # JSON
     ###########################################################################
 
-    def get_upcoming_shows_json(self, reverse: bool = True) -> str:
+    def get_upcoming_shows_json(self) -> str:
         """
         Get upcoming movie shows events as json.
         Default sort: closest shows last.
         """
         upcoming_events = self.get_upcoming_shows_event()
-        return self.events_to_json(upcoming_events, reverse)
+        return self.events_to_json(upcoming_events)
 
-    def get_past_shows_json(self, reverse: bool = True) -> str:
+    def get_past_shows_json(self) -> str:
         """
         Get past movie shows events.
         Default sort: closest shows last.
         """
         past_events = self.get_past_shows_event()
-        return self.events_to_json(past_events, reverse)
+        return self.events_to_json(past_events)
 
-    def get_all_shows_json(self, reverse: bool = True) -> str:
+    def get_all_shows_json(self) -> str:
         """
         Get all movie shows events.
         Default sort: closest shows last.
         """
         all_events = self.get_all_shows_event()
-        return self.events_to_json(all_events, reverse)
+        return self.events_to_json(all_events)
 
     def get_extra_info(self, url: str) -> dict:
         """
@@ -187,7 +186,7 @@ class ElCairo:
             requests.exceptions.Timeout,
             requests.exceptions.TooManyRedirects,
             requests.exceptions.RequestException,
-        ) as _:
+        ):
             # It's not important if I cannot get some of the info.
             return extra_info
 

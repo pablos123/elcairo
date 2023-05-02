@@ -20,14 +20,16 @@ from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weeke
     show_default=True,
 )
 @click.option("--urls", help="Show urls.", is_flag=True, show_default=True)
+@click.option("--reverse", help="Reverse order.", is_flag=True, show_default=True)
 @click.pass_context
-def cinecli(ctx, images, no_extra_info, no_separator, urls):
+def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse):
     """
     Command line interface for El Cairo cinema.
     """
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
     ctx.obj["no_separator"] = no_separator
+    ctx.obj["reverse"] = reverse
     ctx.obj["urls"] = urls
 
 

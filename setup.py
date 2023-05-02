@@ -18,7 +18,7 @@ setup(
         "cinecli.commands.database",
         "cinecli.commands.lib",
         "cinecli.commands.lib.movie_printer",
-        "cinecli.commands.lib.database_utils",
+        "cinecli.commands.lib.database",
         "cinecli.api",
         "cinecli.api.elcairo",
     ],
