@@ -3,7 +3,7 @@
 Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz de mierda a fijarme
 que es lo que van a pasar y de paso nunca la entiendo.
 
-Esto viene a salvarme las papas porque cuando quiero me fijo que hay y organizo para ver una lipe.
+Esto viene a salvarme las papas, cuando quiero me fijo que hay y organizo para ver una lipe.
 
 ## Quickstart
 ### Install
