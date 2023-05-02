@@ -7,6 +7,7 @@ import click
 from .commands.database import database
 from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weekend
 
+from setup import __version__
 
 @click.group()
 @click.option("--images", help="Show images.", is_flag=True, show_default=True)
@@ -21,11 +22,15 @@ from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weeke
 )
 @click.option("--urls", help="Show urls.", is_flag=True, show_default=True)
 @click.option("--reverse", help="Reverse order.", is_flag=True, show_default=True)
+@click.option("--version", help="Print version", is_flag=True, show_default=True)
 @click.pass_context
-def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse):
+def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse, version):
     """
     Command line interface for El Cairo cinema.
     """
+    if version:
+        click.echo(__version__)
+        ctx.exit(0)
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
     ctx.obj["no_separator"] = no_separator

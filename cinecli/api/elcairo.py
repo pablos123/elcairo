@@ -20,7 +20,7 @@ class ElCairo:
 
     def events_to_json(self, events: Set[Event]) -> str:
         """
-        Returns a json of events. The latest first. This method scraps for
+        Returns a json of events. The closest first. This method scraps for
         more info in the specified event url.
         """
 
@@ -149,24 +149,21 @@ class ElCairo:
 
     def get_upcoming_shows_json(self) -> str:
         """
-        Get upcoming movie shows events as json.
-        Default sort: closest shows last.
+        Get upcoming movie shows events as json. Closest shows first.
         """
         upcoming_events = self.get_upcoming_shows_event()
         return self.events_to_json(upcoming_events)
 
     def get_past_shows_json(self) -> str:
         """
-        Get past movie shows events.
-        Default sort: closest shows last.
+        Get past movie shows events. Closest shows last.
         """
         past_events = self.get_past_shows_event()
         return self.events_to_json(past_events)
 
     def get_all_shows_json(self) -> str:
         """
-        Get all movie shows events.
-        Default sort: closest shows last.
+        Get all movie shows events. Closest shows first.
         """
         all_events = self.get_all_shows_event()
         return self.events_to_json(all_events)
@@ -234,17 +231,25 @@ class ElCairo:
             match field_name:
                 case "DIRECCIÓN":
                     key = "direction"
+                case "DIRECCION":
+                    key = "direction"
                 case "ELENCO":
                     key = "cast"
                 case "GÉNERO":
                     key = "genre"
+                case "GENERO":
+                    key = "genre"
                 case "DURACIÓN":
+                    key = "duration"
+                case "DURACION":
                     key = "duration"
                 case "ORIGEN":
                     key = "origin"
                 case "AÑO":
                     key = "year"
                 case "CALIFICACIÓN":
+                    key = "age"
+                case "CALIFICACION":
                     key = "age"
 
             data[key] = field_data

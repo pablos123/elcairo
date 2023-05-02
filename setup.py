@@ -4,9 +4,11 @@ Setup function
 
 from setuptools import setup
 
+__version__ = "1.0.1"
+
 setup(
     name="cinecli",
-    version="1.0.1",
+    version=__version__,
     description="Cli program that shows movies available for watching in El Cario cinema",
     author="Pablo Saavedra",
     url="https://github.com/pablos123/cinecli",
