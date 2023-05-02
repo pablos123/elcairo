@@ -7,7 +7,7 @@ import click
 from .commands.database import database
 from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weekend
 
-from setup import __version__
+__version__="1.0.1"
 
 @click.group()
 @click.option("--images", help="Show images.", is_flag=True, show_default=True)
