@@ -6,8 +6,8 @@ import click
 
 from .commands.database import database
 from .commands.elcairo import day, today, tomorrow, until, upcoming, week, weekend
+from .commands.version import version
 
-__version__="1.0.1"
 
 @click.group()
 @click.option("--images", help="Show images.", is_flag=True, show_default=True)
@@ -28,9 +28,6 @@ def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse, version):
     """
     Command line interface for El Cairo cinema.
     """
-    if version:
-        click.echo(__version__)
-        ctx.exit(0)
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
     ctx.obj["no_separator"] = no_separator
@@ -48,6 +45,7 @@ cinecli.add_command(until)
 cinecli.add_command(upcoming)
 cinecli.add_command(week)
 cinecli.add_command(weekend)
+cinecli.add_command(version)
 
 
 def main():
