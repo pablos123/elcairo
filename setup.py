@@ -4,7 +4,7 @@ Setup function
 
 from setuptools import setup
 
-from .cinecli.main import __version__
+from cinecli.__version__ import __version__
 
 setup(
     name="cinecli",
