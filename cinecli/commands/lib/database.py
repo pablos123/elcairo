@@ -6,7 +6,7 @@ import sqlite3
 
 
 def query_leq(
-    cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order="DESC"
+        cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order: str
 ) -> list:
     """
     Execute query.
@@ -26,7 +26,7 @@ def query_leq(
     return movies
 
 
-def query_eq(cursor: sqlite3.Cursor, date_int: int, order="DESC") -> list:
+def query_eq(cursor: sqlite3.Cursor, date_int: int, order: str) -> list:
     """
     Execute query.
     """

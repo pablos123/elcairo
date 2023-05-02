@@ -29,8 +29,10 @@ def cinecli(ctx, images, no_extra_info, no_separator, urls, reverse):
     ctx.obj["images"] = images
     ctx.obj["no_extra_info"] = no_extra_info
     ctx.obj["no_separator"] = no_separator
-    ctx.obj["reverse"] = reverse
     ctx.obj["urls"] = urls
+    ctx.obj["order"] = "DESC"
+    if reverse:
+        ctx.obj["order"] = "ASC"
 
 
 cinecli.add_command(database)
