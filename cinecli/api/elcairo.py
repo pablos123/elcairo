@@ -20,8 +20,8 @@ class ElCairo:
 
     def events_to_json(self, events: Set[Event]) -> str:
         """
-        Returns a json of events. The closest first. This method scraps for
-        more info in the specified event url.
+        Returns a json of events.
+        This method scraps for more info in the specified event url.
         """
 
         events_dict: dict = {}
@@ -60,10 +60,7 @@ class ElCairo:
 
             events_dict[event.uid] = parsed_dict
 
-        sorted_list: list = sorted(
-            events_dict.items(), key=lambda x: x[1]["date"])
-        sorted_dict: dict = dict(sorted_list)
-        return json.dumps(sorted_dict)
+        return json.dumps(events_dict)
 
     ###########################################################################
     # EVENT
@@ -71,7 +68,7 @@ class ElCairo:
 
     def get_upcoming_shows_event(self) -> Set[Event]:
         """
-        Get upcoming movie shows events. The events are not sorted.
+        Get upcoming movie shows events.
         """
 
         now: Arrow = arrow.now()
@@ -103,7 +100,7 @@ class ElCairo:
 
     def get_past_shows_event(self) -> Set[Event]:
         """
-        Get past movie shows events. The events are not sorted.
+        Get past movie shows events.
         """
 
         now: Arrow = arrow.now()
@@ -135,7 +132,7 @@ class ElCairo:
 
     def get_all_shows_event(self) -> Set[Event]:
         """
-        Get all shows events. The events are not sorted.
+        Get all shows events.
         """
         all_events: Set[Event] = set()
         all_events.update(self.get_past_shows_event())
@@ -149,21 +146,21 @@ class ElCairo:
 
     def get_upcoming_shows_json(self) -> str:
         """
-        Get upcoming movie shows events as json. Closest shows first.
+        Get upcoming movie shows events as json.
         """
         upcoming_events = self.get_upcoming_shows_event()
         return self.events_to_json(upcoming_events)
 
     def get_past_shows_json(self) -> str:
         """
-        Get past movie shows events. Closest shows last.
+        Get past movie shows events.
         """
         past_events = self.get_past_shows_event()
         return self.events_to_json(past_events)
 
     def get_all_shows_json(self) -> str:
         """
-        Get all movie shows events. Closest shows first.
+        Get all movie shows events.
         """
         all_events = self.get_all_shows_event()
         return self.events_to_json(all_events)
@@ -271,7 +268,7 @@ class ElCairo:
 
         def check_mime(mime: str) -> Match[str] | None:
             """
-            Check if the extra info of a 'cairo' type event
+            Check if the extra info of a 'elcairo' type event
             is a 'file' and if the mime type is correct.
             The regex is based on the information
             I saw in some of the El Cairo's .ics
