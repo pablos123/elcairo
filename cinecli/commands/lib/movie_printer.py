@@ -49,6 +49,8 @@ class MoviePrinter:
 
         for movie in movies:
 
+            click.echo()
+
             if not self.no_separator:
                 click.echo(
                     f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
