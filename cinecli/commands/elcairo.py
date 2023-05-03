@@ -10,10 +10,8 @@ import arrow
 import click
 from arrow import Arrow
 
-from .lib.database import query_eq, query_leq
+from .lib.database import query
 from .lib.movie_printer import MoviePrinter
-
-TODAY: int = int(arrow.now().format("YYYYMMDD"))
 
 
 def cursor_printer_init(ctx):
@@ -40,24 +38,38 @@ def cursor_printer_init(ctx):
     )
 
 
-def get_next_sunday() -> int:
+def next_sunday() -> Arrow:
     """
-    Returns the int representation of the next sunday.
+    Arrow object of next sunday.
     """
     date = arrow.now()
     while date.weekday() != 6:
         date = date.dehumanize("in a day")
-    return int(date.format("YYYYMMDD"))
+    return date.floor("day")
 
 
-def get_next_saturday() -> int:
+def next_saturday() -> Arrow:
     """
-    Returns the int representation of the next saturday.
+    Arrow object of the next saturday.
     """
     date = arrow.now()
     while date.weekday() != 5:
         date = date.dehumanize("in a day")
-    return int(date.format("YYYYMMDD"))
+    return date.floor("day")
+
+
+def day_start(date: Arrow) -> int:
+    """
+    Int representation of the start of the day of date.
+    """
+    return int(date.floor("day").format("YYYYMMDDhhmm"))
+
+
+def day_end(date: Arrow) -> int:
+    """
+    Int representation of the end of the day of date.
+    """
+    return int(date.ceil("day").format("YYYYMMDDhhmm"))
 
 
 @click.command()
@@ -67,8 +79,12 @@ def today(ctx) -> None:
     Today's movie shows.
     """
     cursor_printer_init(ctx)
-    movies: list = query_eq(
-        cursor=ctx.obj["cursor"], date_int=TODAY, order=ctx.obj["order"]
+    now = arrow.now()
+    movies: list = query(
+        cursor=ctx.obj["cursor"],
+        date_int_min=day_start(now),
+        date_int_max=day_end(now),
+        order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
 
@@ -80,9 +96,12 @@ def tomorrow(ctx) -> None:
     Tomorrow's movie shows.
     """
     cursor_printer_init(ctx)
-    date_int: int = int(arrow.now().dehumanize("in a day").format("YYYYMMDD"))
-    movies: list = query_eq(
-        cursor=ctx.obj["cursor"], date_int=date_int, order=ctx.obj["order"]
+    tomorrow = arrow.now().dehumanize("in a day")
+    movies: list = query(
+        cursor=ctx.obj["cursor"],
+        date_int_min=day_start(tomorrow),
+        date_int_max=day_end(tomorrow),
+        order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
 
@@ -94,11 +113,10 @@ def week(ctx) -> None:
     Movie shows until next sunday.
     """
     cursor_printer_init(ctx)
-    date_int: int = get_next_sunday()
-    movies: list = query_leq(
+    movies: list = query(
         cursor=ctx.obj["cursor"],
-        date_int_min=TODAY,
-        date_int_max=date_int,
+        date_int_min=day_start(arrow.now()),
+        date_int_max=day_end(next_sunday()),
         order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
@@ -111,13 +129,10 @@ def weekend(ctx) -> None:
     This weekend's movie shows.
     """
     cursor_printer_init(ctx)
-
-    date_int_min: int = get_next_saturday()
-    date_int_max: int = get_next_sunday()
-    movies: list = query_leq(
+    movies: list = query(
         cursor=ctx.obj["cursor"],
-        date_int_min=date_int_min,
-        date_int_max=date_int_max,
+        date_int_min=day_start(next_saturday()),
+        date_int_max=day_end(next_sunday()),
         order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
@@ -134,11 +149,12 @@ def day(ctx, date) -> None:
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
-
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-    date_int: int = int(date_arrow.format("YYYYMMDD"))
-    movies: list = query_eq(
-        cursor=ctx.obj["cursor"], date_int=date_int, order=ctx.obj["order"]
+    movies: list = query(
+        cursor=ctx.obj["cursor"],
+        date_int_min=day_start(date_arrow),
+        date_int_max=day_end(date_arrow),
+        order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
 
@@ -154,13 +170,11 @@ def until(ctx, date) -> None:
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
-
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-    date_int: int = int(date_arrow.format("YYYYMMDD"))
-    movies: list = query_leq(
+    movies: list = query(
         cursor=ctx.obj["cursor"],
-        date_int_min=TODAY,
-        date_int_max=date_int,
+        date_int_min=day_start(arrow.now()),
+        date_int_max=day_end(date_arrow),
         order=ctx.obj["order"],
     )
     ctx.obj["printer"].echo_list(movies)
@@ -173,9 +187,9 @@ def upcoming(ctx) -> None:
     Upcoming movie shows.
     """
     cursor_printer_init(ctx)
-    movies: list = query_leq(
+    movies: list = query(
         cursor=ctx.obj["cursor"],
-        date_int_min=TODAY,
+        date_int_min=day_start(arrow.now()),
         date_int_max=sys.maxsize,
         order=ctx.obj["order"],
     )

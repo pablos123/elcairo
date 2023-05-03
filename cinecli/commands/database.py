@@ -38,7 +38,7 @@ def get_ascii_image(url: str, uid: str) -> str:
         requests.exceptions.TooManyRedirects,
         requests.exceptions.RequestException,
         OSError,
-    ) as _:
+    ):
         output = "[Cannot show image...]"
 
     return output
@@ -85,7 +85,7 @@ def populate(ctx) -> None:
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
-        except OSError as _:
+        except OSError:
             if not ctx.obj["silent"]:
                 click.echo("Cannot remove cinecli.db, try again...")
             ctx.exit(1)
@@ -222,7 +222,7 @@ def clean(ctx) -> None:
 
     try:
         os.remove(database_file)
-    except OSError as _:
+    except OSError:
         if not ctx.obj["silent"]:
             click.echo("Cannot remove cinecli.db, try again...")
         ctx.exit(1)
