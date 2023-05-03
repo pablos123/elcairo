@@ -62,14 +62,14 @@ def day_start(date: Arrow) -> int:
     """
     Int representation of the start of the day of date.
     """
-    return int(date.floor("day").format("YYYYMMDDhhmm"))
+    return int(date.floor("day").format("YYYYMMDDHHmm"))
 
 
 def day_end(date: Arrow) -> int:
     """
     Int representation of the end of the day of date.
     """
-    return int(date.ceil("day").format("YYYYMMDDhhmm"))
+    return int(date.ceil("day").format("YYYYMMDDHHmm"))
 
 
 @click.command()

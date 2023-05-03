@@ -145,7 +145,7 @@ def populate(ctx) -> None:
             event = (
                 movie_data["name"],
                 str(arrow.get(movie_data["date"])),
-                int(arrow.get(movie_data["date"]).format("YYYYMMDDhhmm")),
+                int(arrow.get(movie_data["date"]).format("YYYYMMDDHHmm")),
                 movie_data["synopsis"],
                 movie_data["direction"],
                 movie_data["cast"],
