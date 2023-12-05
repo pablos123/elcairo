@@ -1,9 +1,8 @@
 # cinecli
 
-CLI para ver las películas que van a pasar en el cine El Cairo de Rosario.
+CLI que muestra las películas que van a pasar en el cine El Cairo de Rosario.
 
-La página tiene una interfaz muy poco intuitiva y nunca la entiendo, esto viene
-a ayudarme siempre que quiero ver qué películas van a pasar.
+La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 
 ## Quickstart
 ### Install
@@ -16,8 +15,7 @@ pip install git+https://github.com/pablos123/cinecli.git && cinecli database pop
 ```
 cinecli --help
 ```
-
-I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
+(Pensé en soportar otros cines de la ciudad pero ninguno tiene siquiera una página relativamente prolija como para hacer scrapping. No voy a soportar otros cines.)
 
 ## Screenshots
 ```
