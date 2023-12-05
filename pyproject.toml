@@ -17,7 +17,7 @@ dependencies = [
   "arrow",
   "progress",
 ]
-description = "Cli program that shows movies available for watching in El Cario cinema"
+description = "Cli program that shows movies available for watching in El Cario cinema."
 authors = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }]
 maintainers = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }]
 readme = "README.md"
