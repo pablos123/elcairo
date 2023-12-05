@@ -7,30 +7,30 @@ a ayudarme siempre que quiero ver qué películas van a pasar.
 
 ## Quickstart
 ### Install
-
-```terminal
+```
 pip install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
 > Requires Python >=3.10.
 
 ### Run
-```terminal
+```
 cinecli --help
-```
-**Update**
-```terminal
-pip install -f git+https://github.com/pablos123/cinecli.git
-```
-
-**Uninstall**
-```terminal
-pip uninstall cinecli
 ```
 
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
 
 ## Screenshots
-```terminal
-cinecli --images --urls day --date 16-02-2023
 ```
-![some_movie](https://user-images.githubusercontent.com/52180403/219253983-7aac2088-0e9f-4818-9818-b5cbcdad3a0d.png)
+cinecli --no_separator --no_extra_info weekend
+```
+![image](https://github.com/pablos123/cinecli/assets/52180403/7bfa9e9b-5ff0-4172-b6ea-997f9c953b66)
+
+```
+cinecli --images day --date 09-12-2023
+```
+![image](https://github.com/pablos123/cinecli/assets/52180403/2b7a24fd-2e0b-4962-af66-66f03433f42a)
+
+```
+cinecli --image_urls --urls week
+```
+![image](https://github.com/pablos123/cinecli/assets/52180403/89484244-a826-4fa0-8e58-76efb732eeff)
