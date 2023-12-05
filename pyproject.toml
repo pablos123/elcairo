@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+version = "1.2"
+name = "cinecli"
+requires-python = ">=3.10"
+dependencies = [
+  "ics",
+  "icalendar",
+  "climage",
+  "requests",
+  "colorama",
+  "click",
+  "beautifulsoup4",
+  "arrow",
+  "progress",
+]
+description = "Cli program that shows movies available for watching in El Cario cinema"
+authors = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }]
+maintainers = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }]
+readme = "README.md"
+
+[project.urls]
+Repository = "https://github.com/pablos123/cinecli"
+
+[project.scripts]
+cinecli = "cinecli.main:main"
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+

@@ -1,6 +1,4 @@
-"""
-El Cairo command.
-"""
+"""Database command."""
 
 import json
 import os
@@ -16,18 +14,17 @@ import climage
 import requests
 from progress.spinner import MoonSpinner
 
-from ..api.elcairo import ElCairo
+from cinecli.api.elcairo import ElCairo
 
 
 def get_ascii_image(url: str, uid: str) -> str:
-    """
-    Creates a temporal file reads it, removes it and return the ascii art.
-    """
+    """Creates a temporal file reads it, removes it and return the ascii art."""
+
     output: str = ""
     try:
-        response = requests.get(url, stream=True, timeout=10)
+        response: requests.Response = requests.get(url, stream=True, timeout=10)
         response.raise_for_status()
-        file_name = f"/tmp/{uid}.jpeg"
+        file_name: str = f"/tmp/{uid}.jpeg"
         with open(file_name, "wb") as image_file:
             shutil.copyfileobj(response.raw, image_file)
             output = climage.convert(file_name)
@@ -45,9 +42,8 @@ def get_ascii_image(url: str, uid: str) -> str:
 
 
 def loading(task: str, thread: threading.Thread) -> None:
-    """
-    Echo a task with a spinner
-    """
+    """Echo a task with a spinner."""
+
     with MoonSpinner(task + "...  ") as spinner:
         while thread.is_alive():
             sleep(0.1)
@@ -57,16 +53,15 @@ def loading(task: str, thread: threading.Thread) -> None:
 @click.group()
 @click.option("--silent", help="Don't print anything.", is_flag=True, show_default=True)
 @click.pass_context
-def database(ctx, silent) -> None:
-    """
-    Database operations.
-    """
+def database(ctx: click.Context, silent: bool) -> None:
+    """Database operations."""
+
     if not silent:
         click.echo("📽️ Executing tasks 📽️")
 
     ctx.obj["silent"] = silent
 
-    def bye_msg(silent):
+    def bye_msg(silent: bool):
         if not silent:
             click.echo("📽️ All finished 📽️")
 
@@ -76,10 +71,9 @@ def database(ctx, silent) -> None:
 
 @database.command()
 @click.pass_context
-def populate(ctx) -> None:
-    """
-    Populate the database.
-    """
+def populate(ctx: click.Context) -> None:
+    """Populate the database."""
+
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "cinecli.db")
     if os.path.exists(database_file):
@@ -110,6 +104,7 @@ def populate(ctx) -> None:
         age TEXT NOT NULL,
         cost TEXT NOT NULL,
         image TEXT NOT NULL,
+        image_url TEXT NOT NULL,
         urls TEXT NOT NULL
     );"""
 
@@ -156,6 +151,7 @@ def populate(ctx) -> None:
                 movie_data["age"],
                 movie_data["cost"],
                 get_ascii_image(movie_data["image_url"], uid),
+                movie_data["image_url"],
                 " ".join(movie_data["urls"]),
             )
             data_insert.append(event)
@@ -192,9 +188,10 @@ def populate(ctx) -> None:
             'age',
             'cost',
             'image',
+            'image_url',
             'urls'
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
         data_insert,
     )
 
@@ -206,10 +203,9 @@ def populate(ctx) -> None:
 
 @database.command()
 @click.pass_context
-def clean(ctx) -> None:
-    """
-    Clean the database.
-    """
+def clean(ctx: click.Context) -> None:
+    """Clean the database."""
+
     if not ctx.obj["silent"]:
         click.echo("Deleting the database...")
 

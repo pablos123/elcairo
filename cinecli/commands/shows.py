@@ -1,6 +1,4 @@
-"""
-El Cairo command group.
-"""
+"""Shows command group."""
 
 import os
 import sqlite3
@@ -10,14 +8,13 @@ import arrow
 import click
 from arrow import Arrow
 
-from .lib.database import query
-from .lib.movie_printer import MoviePrinter
+from cinecli.commands.lib.database import query
+from cinecli.commands.lib.movie_printer import MoviePrinter
 
 
-def cursor_printer_init(ctx):
-    """
-    Initialize the cursor and the printer.
-    """
+def cursor_printer_init(ctx: click.Context):
+    """Initialize the cursor and the printer."""
+
     script_dir = os.path.realpath(os.path.dirname(__file__))
     database_file = os.path.join(script_dir, "cinecli.db")
 
@@ -35,52 +32,48 @@ def cursor_printer_init(ctx):
         no_extra_info=ctx.obj["no_extra_info"],
         no_separator=ctx.obj["no_separator"],
         urls=ctx.obj["urls"],
+        image_urls=ctx.obj["image_urls"],
     )
 
 
 def next_sunday() -> Arrow:
-    """
-    Arrow object of next sunday.
-    """
-    date = arrow.now()
+    """Arrow object of next sunday."""
+
+    date:Arrow = arrow.now()
     while date.weekday() != 6:
         date = date.dehumanize("in a day")
     return date.floor("day")
 
 
 def next_saturday() -> Arrow:
-    """
-    Arrow object of the next saturday.
-    """
-    date = arrow.now()
+    """Arrow object of the next saturday."""
+
+    date: Arrow = arrow.now()
     while date.weekday() != 5:
         date = date.dehumanize("in a day")
     return date.floor("day")
 
 
 def day_start(date: Arrow) -> int:
-    """
-    Int representation of the start of the day of date.
-    """
+    """Int representation of the start of the day of date."""
+
     return int(date.floor("day").format("YYYYMMDDHHmm"))
 
 
 def day_end(date: Arrow) -> int:
-    """
-    Int representation of the end of the day of date.
-    """
+    """Int representation of the end of the day of date."""
+
     return int(date.ceil("day").format("YYYYMMDDHHmm"))
 
 
 @click.command()
 @click.pass_context
-def today(ctx) -> None:
-    """
-    Today's movie shows.
-    """
+def today(ctx: click.Context) -> None:
+    """Today's movie shows."""
+
     cursor_printer_init(ctx)
-    now = arrow.now()
-    movies: list = query(
+    now: Arrow = arrow.now()
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(now),
         date_int_max=day_end(now),
@@ -91,13 +84,12 @@ def today(ctx) -> None:
 
 @click.command()
 @click.pass_context
-def tomorrow(ctx) -> None:
-    """
-    Tomorrow's movie shows.
-    """
+def tomorrow(ctx: click.Context) -> None:
+    """Tomorrow's movie shows."""
+
     cursor_printer_init(ctx)
-    tomorrow = arrow.now().dehumanize("in a day")
-    movies: list = query(
+    tomorrow: Arrow = arrow.now().dehumanize("in a day")
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(tomorrow),
         date_int_max=day_end(tomorrow),
@@ -108,12 +100,11 @@ def tomorrow(ctx) -> None:
 
 @click.command()
 @click.pass_context
-def week(ctx) -> None:
-    """
-    Movie shows until next sunday.
-    """
+def week(ctx: click.Context) -> None:
+    """Movie shows until next sunday."""
+
     cursor_printer_init(ctx)
-    movies: list = query(
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(arrow.now()),
         date_int_max=day_end(next_sunday()),
@@ -124,12 +115,11 @@ def week(ctx) -> None:
 
 @click.command()
 @click.pass_context
-def weekend(ctx) -> None:
-    """
-    This weekend's movie shows.
-    """
+def weekend(ctx: click.Context) -> None:
+    """This weekend's movie shows."""
+
     cursor_printer_init(ctx)
-    movies: list = query(
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(next_saturday()),
         date_int_max=day_end(next_sunday()),
@@ -141,16 +131,15 @@ def weekend(ctx) -> None:
 @click.command()
 @click.option("--date", type=click.DateTime(formats=["%d-%m-%Y"]), required=True)
 @click.pass_context
-def day(ctx, date) -> None:
-    """
-    Movie shows of a given date.
-    """
+def day(ctx: click.Context, date) -> None:
+    """Movie shows of a given date."""
+
     cursor_printer_init(ctx)
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-    movies: list = query(
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(date_arrow),
         date_int_max=day_end(date_arrow),
@@ -162,16 +151,15 @@ def day(ctx, date) -> None:
 @click.command()
 @click.option("--date", type=click.DateTime(formats=["%d-%m-%Y"]), required=True)
 @click.pass_context
-def until(ctx, date) -> None:
-    """
-    Movie shows until a given date.
-    """
+def until(ctx: click.Context, date) -> None:
+    """Movie shows until a given date."""
+
     cursor_printer_init(ctx)
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
     date_arrow: Arrow = arrow.get(f"{year}-{month}-{day_date}")
-    movies: list = query(
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(arrow.now()),
         date_int_max=day_end(date_arrow),
@@ -182,12 +170,11 @@ def until(ctx, date) -> None:
 
 @click.command()
 @click.pass_context
-def upcoming(ctx) -> None:
-    """
-    Upcoming movie shows.
-    """
+def upcoming(ctx: click.Context) -> None:
+    """Upcoming movie shows."""
+
     cursor_printer_init(ctx)
-    movies: list = query(
+    movies: list[dict] = query(
         cursor=ctx.obj["cursor"],
         date_int_min=day_start(arrow.now()),
         date_int_max=sys.maxsize,

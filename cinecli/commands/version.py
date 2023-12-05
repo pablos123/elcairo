@@ -1,10 +1,14 @@
 import click
 
-from ..__version__ import __version__
+import importlib.metadata
 
 @click.command()
 def version() -> None:
     """
     Print version and exit.
     """
-    click.echo(__version__)
+    metadata = importlib.metadata.metadata("cinecli")
+    project = metadata["Name"]
+    author = metadata["author-email"]
+    version = metadata ["Version"]
+    click.echo(f"{project} version {version} by {author}")

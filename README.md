@@ -1,17 +1,15 @@
 # cinecli
 
-Estoy yendo 2 veces por semana al Cairo y siempre voy a la página con una interfaz de mierda a fijarme
-que es lo que van a pasar y de paso nunca la entiendo.
+CLI para ver las películas que van a pasar en el cine El Cairo de Rosario.
 
-Esto viene a salvarme las papas, cuando quiero me fijo que hay y organizo para ver una lipe.
+La página tiene una interfaz muy poco intuitiva y nunca la entiendo, esto viene
+a ayudarme siempre que quiero ver qué películas van a pasar.
 
 ## Quickstart
 ### Install
 
 ```terminal
-sudo apt install python3-venv
-python3 -m pip install --user pipx && python3 -m pipx ensurepath
-pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
+pip install git+https://github.com/pablos123/cinecli.git && cinecli database populate
 ```
 > Requires Python >=3.10.
 
@@ -19,29 +17,15 @@ pipx install git+https://github.com/pablos123/cinecli.git && cinecli database po
 ```terminal
 cinecli --help
 ```
-
-## Linux ecosystem
-### Automate the database population
-![Automate database population!](https://github.com/pablos123/cinecli/wiki/Automate-database-population!)
-### Desktop notifications
-![Get notified!](https://github.com/pablos123/cinecli/wiki/Get-notified!)
-
-## More info:
-![cinecli wiki](https://github.com/pablos123/cinecli/wiki)
-
 **Update**
 ```terminal
-pipx uninstall cinecli && pipx install git+https://github.com/pablos123/cinecli.git && cinecli database populate
+pip install -f git+https://github.com/pablos123/cinecli.git
 ```
 
 **Uninstall**
 ```terminal
-pipx uninstall cinecli
+pip uninstall cinecli
 ```
-
-**`pipx` docs**
-
-https://pypa.github.io/pipx/installation/
 
 I thought of supporting other cinemas but none of them provides a clean web interface to even do some scrapping. I will not support other cinemas.
 

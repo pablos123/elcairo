@@ -4,21 +4,18 @@ Cine El Cairo API
 
 import json
 import re
-from typing import Any, Container, Match, Set
+from typing import Container, Match, Set
 
 import arrow
+import bs4
+import ics
 import requests
-from arrow import Arrow
-from bs4 import BeautifulSoup, Tag
-from ics import Calendar, Event
 
 
 class ElCairo:
-    """
-    Get El Cairo cinema shows information.
-    """
+    """Get El Cairo cinema shows information."""
 
-    def events_to_json(self, events: Set[Event]) -> str:
+    def events_to_json(self, events: Set[ics.Event]) -> str:
         """
         Returns a json of events.
         This method scraps for more info in the specified event url.
@@ -66,22 +63,20 @@ class ElCairo:
     # EVENT
     ###########################################################################
 
-    def get_upcoming_shows_event(self) -> Set[Event]:
-        """
-        Get upcoming movie shows events.
-        """
+    def get_upcoming_shows_event(self) -> Set[ics.Event]:
+        """Get upcoming movie shows events."""
 
-        now: Arrow = arrow.now()
+        now: arrow.Arrow = arrow.now()
 
         year: int = now.year
         month: int = now.month
 
-        upcoming_events: Set[Event] = set()
-        current_events: Set[Event] = self.fetch_events(
+        upcoming_events: Set[ics.Event] = set()
+        current_events: Set[ics.Event] = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
         while current_events != set():
-            current_upcoming_events: Set[Event] = set()
+            current_upcoming_events: Set[ics.Event] = set()
             for event in current_events:
                 if event.begin >= now:
                     current_upcoming_events.add(event)
@@ -93,23 +88,20 @@ class ElCairo:
                 year += 1
             month += 1
 
-            current_events = self.fetch_events(
-                str(year).zfill(4), str(month).zfill(2))
+            current_events = self.fetch_events(str(year).zfill(4), str(month).zfill(2))
 
         return upcoming_events
 
-    def get_past_shows_event(self) -> Set[Event]:
-        """
-        Get past movie shows events.
-        """
+    def get_past_shows_event(self) -> Set[ics.Event]:
+        """Get past movie shows events."""
 
-        now: Arrow = arrow.now()
+        now: arrow.Arrow = arrow.now()
 
         year: int = now.year
         month: int = now.month
 
-        past_events: Set[Event] = set()
-        current_events: Set[Event] = self.fetch_events(
+        past_events: Set[ics.Event] = set()
+        current_events: Set[ics.Event] = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
         while current_events != set():
@@ -118,23 +110,21 @@ class ElCairo:
                 year -= 1
             month -= 1
 
-            current_past_events: Set[Event] = set()
+            current_past_events: Set[ics.Event] = set()
             for event in current_events:
                 if event.begin <= now:
                     current_past_events.add(event)
 
             past_events.update(current_past_events)
 
-            current_events = self.fetch_events(
-                str(year).zfill(4), str(month).zfill(2))
+            current_events = self.fetch_events(str(year).zfill(4), str(month).zfill(2))
 
         return past_events
 
-    def get_all_shows_event(self) -> Set[Event]:
-        """
-        Get all shows events.
-        """
-        all_events: Set[Event] = set()
+    def get_all_shows_event(self) -> Set[ics.Event]:
+        """Get all shows events."""
+
+        all_events: Set[ics.Event] = set()
         all_events.update(self.get_past_shows_event())
         all_events.update(self.get_upcoming_shows_event())
 
@@ -145,35 +135,30 @@ class ElCairo:
     ###########################################################################
 
     def get_upcoming_shows_json(self) -> str:
-        """
-        Get upcoming movie shows events as json.
-        """
-        upcoming_events = self.get_upcoming_shows_event()
+        """Get upcoming movie shows events as json."""
+
+        upcoming_events: Set[ics.Event] = self.get_upcoming_shows_event()
         return self.events_to_json(upcoming_events)
 
     def get_past_shows_json(self) -> str:
-        """
-        Get past movie shows events.
-        """
-        past_events = self.get_past_shows_event()
+        """Get past movie shows events."""
+
+        past_events: Set[ics.Event] = self.get_past_shows_event()
         return self.events_to_json(past_events)
 
     def get_all_shows_json(self) -> str:
-        """
-        Get all movie shows events.
-        """
-        all_events = self.get_all_shows_event()
+        """Get all movie shows events."""
+
+        all_events: Set[ics.Event] = self.get_all_shows_event()
         return self.events_to_json(all_events)
 
     def get_extra_info(self, url: str) -> dict:
-        """
-        Get the extra info inside a El Cairo's url.
-        """
+        """Get the extra info inside a El Cairo's url."""
 
         extra_info: dict = {}
 
         try:
-            response = requests.get(url, timeout=10)
+            response: requests.Response = requests.get(url, timeout=10)
             response.raise_for_status()
         except (
             requests.exceptions.HTTPError,
@@ -186,20 +171,20 @@ class ElCairo:
 
         response_html: str = response.text
 
-        soup = BeautifulSoup(response_html, "html.parser")
+        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(response_html, "html.parser")
 
         synopsis: str = ""
-        synopsis_elem: Tag | None = soup.select_one(".sinopsis-online")
+        synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
         if synopsis_elem is not None and synopsis_elem.find("p") is not None:
             synopsis = synopsis_elem.find("p").text
         extra_info["synopsis"] = synopsis
 
-        data_elem: Tag | None = soup.select_one(".ficha-tecnica-online")
+        data_elem: bs4.Tag | None = soup.select_one(".ficha-tecnica-online")
         if data_elem is not None:
             extra_info.update(self.get_extra_info_data(data_elem))
 
         cost: str = ""
-        cost_elem: Tag | None = soup.select_one(".informacion-entradas")
+        cost_elem: bs4.Tag | None = soup.select_one(".informacion-entradas")
         if cost_elem is not None and cost_elem.find("p") is not None:
             cost = cost_elem.find("p").text
         extra_info["cost"] = cost
@@ -207,10 +192,9 @@ class ElCairo:
         return extra_info
 
     @staticmethod
-    def get_extra_info_data(data_elem: Tag) -> dict:
-        """
-        Get the extra data in the extra information.
-        """
+    def get_extra_info_data(data_elem: bs4.Tag) -> dict:
+        """Get the extra data in the extra information."""
+
         data: dict = {}
         data_lines: list[str] = data_elem.text.split("\n")
         if len(data_lines) == 0:
@@ -253,17 +237,16 @@ class ElCairo:
         return data
 
     @staticmethod
-    def modify_url(url: Any) -> Any:
-        """
-        Modify the url of the movie show to be the url that shows all the shows.
-        """
+    def modify_url(url: str) -> str:
+        """Modify the url of the movie show to be the url that shows all the shows."""
+
         return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
 
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:
         """
         Get the image url if the mime type is a valid image mime type
-        And is supported by climage.
+        and is supported by climage.
         """
 
         def check_mime(mime: str) -> Match[str] | None:
@@ -283,10 +266,9 @@ class ElCairo:
         return image_url
 
     @staticmethod
-    def fetch_events(year: str, month: str) -> Set[Event]:
-        """
-        Fetch the ics file of the year-month date.
-        """
+    def fetch_events(year: str, month: str) -> Set[ics.Event]:
+        """Fetch the ics file of the year-month date."""
+
         ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/{year}-{month}/?ical=1"
 
         try:
@@ -300,6 +282,6 @@ class ElCairo:
         ) as get_error:
             raise get_error
 
-        cal: Calendar = Calendar(response.text)
+        cal: ics.Calendar = ics.Calendar(response.text)
 
         return cal.events
