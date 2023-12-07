@@ -13,7 +13,7 @@ import requests
 
 
 class ElCairo:
-    """Get El Cairo cinema shows information."""
+    """Get El Cairo's movie shows information."""
 
     def events_to_json(self, events: Set[ics.Event]) -> str:
         """
@@ -122,7 +122,7 @@ class ElCairo:
         return past_events
 
     def get_all_shows_event(self) -> Set[ics.Event]:
-        """Get all shows events."""
+        """Get all movie shows events."""
 
         all_events: Set[ics.Event] = set()
         all_events.update(self.get_past_shows_event())

@@ -1,57 +1,23 @@
-"""Database command."""
+"""Database command group."""
 
 import json
 import os
-import shutil
 import sqlite3
 import threading
-from functools import partial
-from time import sleep
+import functools
+import ics
 
 import arrow
 import click
-import climage
-import requests
-from progress.spinner import MoonSpinner
 
+import cinecli.commands.lib.database_functions as database_functions
 from cinecli.api.elcairo import ElCairo
 
 
-def get_ascii_image(url: str, uid: str) -> str:
-    """Creates a temporal file reads it, removes it and return the ascii art."""
-
-    output: str = ""
-    try:
-        response: requests.Response = requests.get(url, stream=True, timeout=10)
-        response.raise_for_status()
-        file_name: str = f"/tmp/{uid}.jpeg"
-        with open(file_name, "wb") as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-            output = climage.convert(file_name)
-        os.remove(file_name)
-    except (
-        requests.exceptions.HTTPError,
-        requests.exceptions.Timeout,
-        requests.exceptions.TooManyRedirects,
-        requests.exceptions.RequestException,
-        OSError,
-    ):
-        output = "[Cannot show image...]"
-
-    return output
-
-
-def loading(task: str, thread: threading.Thread) -> None:
-    """Echo a task with a spinner."""
-
-    with MoonSpinner(task + "...  ") as spinner:
-        while thread.is_alive():
-            sleep(0.1)
-            spinner.next()
-
-
 @click.group()
-@click.option("--silent", help="Don't print anything.", is_flag=True, show_default=True)
+@click.option(
+    "-s", "--silent", help="Don't print anything.", is_flag=True, show_default=True
+)
 @click.pass_context
 def database(ctx: click.Context, silent: bool) -> None:
     """Database operations."""
@@ -65,14 +31,28 @@ def database(ctx: click.Context, silent: bool) -> None:
         if not silent:
             click.echo("📽️ All finished 📽️")
 
-    bye_call = partial(bye_msg, silent)
+    bye_call = functools.partial(bye_msg, silent)
     ctx.call_on_close(bye_call)
 
 
 @database.command()
+@click.option(
+    "-i",
+    "--ics-file",
+    help="Read from this .ics instead of calling the API."
+         "(Just for testing .ics files. This will not populate the DB.)",
+    type=click.Path(exists=True),
+    required=False,
+)
 @click.pass_context
-def populate(ctx: click.Context) -> None:
+def populate(ctx: click.Context, ics_file: click.Path) -> None:
     """Populate the database."""
+
+    if ics_file:
+        with open(str(ics_file), "r") as file:
+            calendar_text: str = file.read()
+            ics.Calendar(calendar_text)
+        ctx.exit(0)
 
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "cinecli.db")
@@ -127,7 +107,7 @@ def populate(ctx: click.Context) -> None:
 
     if not ctx.obj["silent"]:
         # This will wait for thread to finish
-        loading("Fetching data", thread_fetch)
+        database_functions.loading("Fetching data", thread_fetch)
 
     # If you go silent wait for the thread, anyway close the thread safely
     thread_fetch.join()
@@ -150,7 +130,8 @@ def populate(ctx: click.Context) -> None:
                 movie_data["year"],
                 movie_data["age"],
                 movie_data["cost"],
-                get_ascii_image(movie_data["image_url"], uid),
+                database_functions.get_ascii_image(
+                    movie_data["image_url"], uid),
                 movie_data["image_url"],
                 " ".join(movie_data["urls"]),
             )
@@ -168,7 +149,7 @@ def populate(ctx: click.Context) -> None:
     thread_events.start()
 
     if not ctx.obj["silent"]:
-        loading("Creating events", thread_events)
+        database_functions.loading("Creating events", thread_events)
 
     thread_events.join()
 
