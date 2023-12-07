@@ -19,11 +19,11 @@ cinecli --help
 
 ## Screenshots
 ```
-cinecli --images day --date 09-12-2023
+cinecli shows --images day --date 09-12-2023
 ```
 ![image](https://github.com/pablos123/cinecli/assets/52180403/2b7a24fd-2e0b-4962-af66-66f03433f42a)
 
 ```
-cinecli --image_urls --urls week
+cinecli shows --image-urls --urls week
 ```
 ![image](https://github.com/pablos123/cinecli/assets/52180403/89484244-a826-4fa0-8e58-76efb732eeff)
