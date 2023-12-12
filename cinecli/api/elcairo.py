@@ -4,7 +4,7 @@ Cine El Cairo API
 
 import json
 import re
-from typing import Container, Match, Set
+from typing import Container, Match, Set, Tuple
 
 import arrow
 import bs4
@@ -59,10 +59,6 @@ class ElCairo:
 
         return json.dumps(events_dict)
 
-    ###########################################################################
-    # EVENT
-    ###########################################################################
-
     def get_upcoming_shows_event(self) -> Set[ics.Event]:
         """Get upcoming movie shows events."""
 
@@ -72,10 +68,21 @@ class ElCairo:
         month: int = now.month
 
         upcoming_events: Set[ics.Event] = set()
-        current_events: Set[ics.Event] = self.fetch_events(
+        current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
-        while current_events != set():
+        while current_events != set() or error:
+            if month == 12:
+                month = 0
+                year += 1
+            month += 1
+
+            if error:
+                current_events, error = self.fetch_events(
+                    str(year).zfill(4), str(month).zfill(2)
+                )
+                continue
+
             current_upcoming_events: Set[ics.Event] = set()
             for event in current_events:
                 if event.begin >= now:
@@ -83,12 +90,9 @@ class ElCairo:
 
             upcoming_events.update(current_upcoming_events)
 
-            if month == 12:
-                month = 0
-                year += 1
-            month += 1
-
-            current_events = self.fetch_events(str(year).zfill(4), str(month).zfill(2))
+            current_events, error = self.fetch_events(
+                str(year).zfill(4), str(month).zfill(2)
+            )
 
         return upcoming_events
 
@@ -101,14 +105,20 @@ class ElCairo:
         month: int = now.month
 
         past_events: Set[ics.Event] = set()
-        current_events: Set[ics.Event] = self.fetch_events(
+        current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
-        while current_events != set():
+        while current_events != set() or error:
             if month == 1:
                 month = 13
                 year -= 1
             month -= 1
+
+            if error:
+                current_events, error = self.fetch_events(
+                    str(year).zfill(4), str(month).zfill(2)
+                )
+                continue
 
             current_past_events: Set[ics.Event] = set()
             for event in current_events:
@@ -117,7 +127,9 @@ class ElCairo:
 
             past_events.update(current_past_events)
 
-            current_events = self.fetch_events(str(year).zfill(4), str(month).zfill(2))
+            current_events, error = self.fetch_events(
+                str(year).zfill(4), str(month).zfill(2)
+            )
 
         return past_events
 
@@ -129,10 +141,6 @@ class ElCairo:
         all_events.update(self.get_upcoming_shows_event())
 
         return all_events
-
-    ###########################################################################
-    # JSON
-    ###########################################################################
 
     def get_upcoming_shows_json(self) -> str:
         """Get upcoming movie shows events as json."""
@@ -171,7 +179,8 @@ class ElCairo:
 
         response_html: str = response.text
 
-        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(response_html, "html.parser")
+        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(
+            response_html, "html.parser")
 
         synopsis: str = ""
         synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
@@ -200,6 +209,20 @@ class ElCairo:
         if len(data_lines) == 0:
             return data
 
+        field_names: dict = {
+            "DIRECCIÓN": "direction",
+            "DIRECCION": "direction",
+            "ELENCO": "cast",
+            "GÉNERO": "genre",
+            "GENERO": "genre",
+            "DURACIÓN": "duration",
+            "DURACION": "duration",
+            "ORIGEN": "origin",
+            "AÑO": "year",
+            "CALIFICACIÓN": "age",
+            "CALIFICACION": "age",
+        }
+
         for line in data_lines:
             match = re.match(r"^ *(\w+): (.+)$", line)
             if not match:
@@ -208,32 +231,9 @@ class ElCairo:
             field_name: str = match.group(1)
             field_data: str = match.group(2)
 
-            key: str = ""
-            match field_name:
-                case "DIRECCIÓN":
-                    key = "direction"
-                case "DIRECCION":
-                    key = "direction"
-                case "ELENCO":
-                    key = "cast"
-                case "GÉNERO":
-                    key = "genre"
-                case "GENERO":
-                    key = "genre"
-                case "DURACIÓN":
-                    key = "duration"
-                case "DURACION":
-                    key = "duration"
-                case "ORIGEN":
-                    key = "origin"
-                case "AÑO":
-                    key = "year"
-                case "CALIFICACIÓN":
-                    key = "age"
-                case "CALIFICACION":
-                    key = "age"
-
-            data[key] = field_data
+            key: str | None = field_names.get(field_name)
+            if key is not None:
+                data[key] = field_data
         return data
 
     @staticmethod
@@ -266,7 +266,7 @@ class ElCairo:
         return image_url
 
     @staticmethod
-    def fetch_events(year: str, month: str) -> Set[ics.Event]:
+    def fetch_events(year: str, month: str) -> Tuple[Set[ics.Event], bool]:
         """Fetch the ics file of the year-month date."""
 
         ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/{year}-{month}/?ical=1"
@@ -282,6 +282,11 @@ class ElCairo:
         ) as get_error:
             raise get_error
 
-        cal: ics.Calendar = ics.Calendar(response.text)
+        error: bool = False
+        events: Set[ics.Event] = set()
+        try:
+            events = ics.Calendar(response.text).events
+        except ValueError:
+            error = True
 
-        return cal.events
+        return events, error
