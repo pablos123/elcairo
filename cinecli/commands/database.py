@@ -39,8 +39,7 @@ def database(ctx: click.Context, silent: bool) -> None:
 @click.option(
     "-i",
     "--ics-file",
-    help="Read from this .ics instead of calling the API."
-         "(Just for testing .ics files. This will not populate the DB.)",
+    help="Read from a .ics instead of calling the API. (Just for testing .ics files. This will not populate the DB.)",
     type=click.Path(exists=True),
     required=False,
 )
