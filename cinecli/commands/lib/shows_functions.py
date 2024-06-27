@@ -48,8 +48,8 @@ def cursor_init(ctx: click.Context) -> None:
 def printer_init(ctx: click.Context) -> None:
     ctx.obj["printer"] = MoviePrinter(
         images=ctx.obj["images"],
-        no_extra_info=ctx.obj["no_extra_info"],
-        no_separator=ctx.obj["no_separator"],
+        extra_info=ctx.obj["extra_info"],
+        separator=ctx.obj["separator"],
         urls=ctx.obj["urls"],
         image_urls=ctx.obj["image_urls"],
     )

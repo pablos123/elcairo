@@ -1,4 +1,5 @@
 """Print movies"""
+
 import arrow
 import click
 from arrow import Arrow
@@ -32,14 +33,14 @@ class MoviePrinter:
     def __init__(
         self,
         images: bool,
-        no_extra_info: bool,
-        no_separator: bool,
+        extra_info: bool,
+        separator: bool,
         urls: bool,
         image_urls: bool,
     ):
         self.images = images
-        self.no_extra_info = no_extra_info
-        self.no_separator = no_separator
+        self.extra_info = extra_info
+        self.separator = separator
         self.urls = urls
         self.image_urls = image_urls
 
@@ -53,7 +54,7 @@ class MoviePrinter:
         for movie in movies:
             click.echo()
 
-            if not self.no_separator:
+            if self.separator:
                 click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
 
             self.echo_title(movie)
@@ -64,7 +65,7 @@ class MoviePrinter:
             if self.image_urls:
                 self.echo_image_url(movie)
 
-            if not self.no_extra_info:
+            if self.extra_info:
                 self.echo_extra_info(movie)
 
             if self.urls:

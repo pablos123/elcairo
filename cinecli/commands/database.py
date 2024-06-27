@@ -1,14 +1,14 @@
 """Database command group."""
 
+import functools
 import json
 import os
 import sqlite3
 import threading
-import functools
-import ics
 
 import arrow
 import click
+import ics
 
 import cinecli.commands.lib.database_functions as database_functions
 from cinecli.api.elcairo import ElCairo
@@ -16,7 +16,7 @@ from cinecli.api.elcairo import ElCairo
 
 @click.group()
 @click.option(
-    "-s", "--silent", help="Don't print anything.", is_flag=True, show_default=True
+    "-s", "--silent/--no-silent", help="Don't print anything.", show_default=True
 )
 @click.pass_context
 def database(ctx: click.Context, silent: bool) -> None:
@@ -129,8 +129,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
                 movie_data["year"],
                 movie_data["age"],
                 movie_data["cost"],
-                database_functions.get_ascii_image(
-                    movie_data["image_url"], uid),
+                database_functions.get_ascii_image(movie_data["image_url"], uid),
                 movie_data["image_url"],
                 " ".join(movie_data["urls"]),
             )

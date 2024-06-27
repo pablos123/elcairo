@@ -10,34 +10,42 @@ import cinecli.commands.lib.shows_functions as shows_functions
 
 
 @click.group()
-@click.option("-i", "--images", help="Show images.", is_flag=True, show_default=True)
+@click.option("-i", "--images/--no-images", help="Show images.", show_default=True)
 @click.option(
     "-e",
-    "--no-extra-info",
-    help="Don't show extra info.",
-    is_flag=True,
+    "--extra-info/--no-extra-info",
+    help="Show extra info.",
+    default=True,
     show_default=True,
 )
 @click.option(
     "-s",
-    "--no-separator",
-    help="Don't show the separator between movies.",
-    is_flag=True,
+    "--separator/--no-separator",
+    help="Show the separator between movies.",
+    default=True,
     show_default=True,
 )
 @click.option(
-    "-u", "--urls/--no-urls", help="Show urls.", is_flag=True, show_default=True
+    "-u", "--urls/--no-urls", help="Show urls.", default=True, show_default=True
 )
 @click.option(
-    "-l", "--image-urls", help="Show images' urls.", is_flag=True, show_default=True
+    "-l",
+    "--image-urls/--no-image-urls",
+    help="Show images' urls.",
+    show_default=True,
 )
-@click.option("-r", "--reverse", help="Reverse order.", is_flag=True, show_default=True)
+@click.option(
+    "-r",
+    "--reverse/--no-reverse",
+    help="Reverse order.",
+    show_default=True,
+)
 @click.pass_context
 def shows(
     ctx: click.Context,
     images: bool,
-    no_extra_info: bool,
-    no_separator: bool,
+    extra_info: bool,
+    separator: bool,
     urls: bool,
     image_urls: bool,
     reverse: bool,
@@ -45,8 +53,8 @@ def shows(
     """Movie shows printer."""
 
     ctx.obj["images"] = images
-    ctx.obj["no_extra_info"] = no_extra_info
-    ctx.obj["no_separator"] = no_separator
+    ctx.obj["extra_info"] = extra_info
+    ctx.obj["separator"] = separator
     ctx.obj["urls"] = urls
     ctx.obj["image_urls"] = image_urls
     ctx.obj["order"] = "DESC"
@@ -107,8 +115,7 @@ def weekend(ctx: click.Context) -> None:
 
     movies: list[dict] = shows_functions.query(
         cursor=ctx.obj["cursor"],
-        date_int_min=shows_functions.day_start(
-            shows_functions.next_saturday()),
+        date_int_min=shows_functions.day_start(shows_functions.next_saturday()),
         date_int_max=shows_functions.day_end(shows_functions.next_sunday()),
         order=ctx.obj["order"],
     )
