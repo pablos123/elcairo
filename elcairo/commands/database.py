@@ -10,8 +10,8 @@ import arrow
 import click
 import ics
 
-import cinecli.commands.lib.database_functions as database_functions
-from cinecli.api.elcairo import ElCairo
+import elcairo.commands.lib.database_functions as database_functions
+from elcairo.api.elcairo import ElCairo
 
 
 @click.group()
@@ -54,13 +54,13 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         ctx.exit(0)
 
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "cinecli.db")
+    database_file: str = os.path.join(script_dir, "elcairo.db")
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
         except OSError:
             if not ctx.obj["silent"]:
-                click.echo("Cannot remove cinecli.db, try again...")
+                click.echo("Cannot remove elcairo.db, try again...")
             ctx.exit(1)
 
     connection = sqlite3.connect(database_file)
@@ -189,7 +189,7 @@ def clean(ctx: click.Context) -> None:
         click.echo("Deleting the database...")
 
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "cinecli.db")
+    database_file: str = os.path.join(script_dir, "elcairo.db")
     if not os.path.exists(database_file):
         if not ctx.obj["silent"]:
             click.echo("The database does not exists!")
@@ -199,5 +199,5 @@ def clean(ctx: click.Context) -> None:
         os.remove(database_file)
     except OSError:
         if not ctx.obj["silent"]:
-            click.echo("Cannot remove cinecli.db, try again...")
+            click.echo("Cannot remove elcairo.db, try again...")
         ctx.exit(1)

@@ -1,7 +1,7 @@
 __pycache__
-cinecli.db
+elcairo.db
 .mypy_cache
 build
-cinecli.egg-info
+elcairo.egg-info
 el-cairo-872567b6880.ics
 el-cairo-98e31149e1a.ics

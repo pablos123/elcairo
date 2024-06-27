@@ -4,6 +4,7 @@ Cine El Cairo API
 
 import json
 import re
+import time
 from typing import Container, Match, Set, Tuple
 
 import arrow
@@ -179,8 +180,7 @@ class ElCairo:
 
         response_html: str = response.text
 
-        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(
-            response_html, "html.parser")
+        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(response_html, "html.parser")
 
         synopsis: str = ""
         synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
@@ -268,6 +268,8 @@ class ElCairo:
     @staticmethod
     def fetch_events(year: str, month: str) -> Tuple[Set[ics.Event], bool]:
         """Fetch the ics file of the year-month date."""
+
+        time.sleep(0.5)
 
         ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/{year}-{month}/?ical=1"
 

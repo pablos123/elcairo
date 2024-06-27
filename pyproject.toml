@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 version = "1.4"
-name = "cinecli"
+name = "elcairo"
 requires-python = ">=3.10"
 dependencies = [
   "ics",
@@ -23,10 +23,10 @@ maintainers = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }
 readme = "README.md"
 
 [project.urls]
-Repository = "https://github.com/pablos123/cinecli"
+Repository = "https://github.com/pablos123/elcairo"
 
 [project.scripts]
-cinecli = "cinecli.main:main"
+elcairo = "elcairo.main:main"
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true

@@ -6,7 +6,7 @@ import sqlite3
 import arrow
 import click
 
-from cinecli.commands.lib.movie_printer import MoviePrinter
+from elcairo.commands.lib.movie_printer import MoviePrinter
 
 
 def query(
@@ -33,10 +33,10 @@ def cursor_init(ctx: click.Context) -> None:
     """Initialize the cursor and the printer."""
 
     script_dir = os.path.realpath(os.path.dirname(__file__))
-    database_file = os.path.join(script_dir, "..", "cinecli.db")
+    database_file = os.path.join(script_dir, "..", "elcairo.db")
 
     if not os.path.exists(database_file):
-        click.echo("Create the database first!...")
+        click.echo("Create the database first!")
         ctx.exit(1)
 
     connection = sqlite3.connect(database_file)

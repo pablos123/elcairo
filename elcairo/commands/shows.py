@@ -6,7 +6,7 @@ import sys
 import arrow
 import click
 
-import cinecli.commands.lib.shows_functions as shows_functions
+import elcairo.commands.lib.shows_functions as shows_functions
 
 
 @click.group()
