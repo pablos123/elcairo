@@ -22,12 +22,9 @@ import elcairo.commands.lib.shows_functions as shows_functions
     "-s",
     "--separator/--no-separator",
     help="Show the separator between movies.",
-    default=True,
     show_default=True,
 )
-@click.option(
-    "-u", "--urls/--no-urls", help="Show urls.", default=True, show_default=True
-)
+@click.option("-u", "--urls/--no-urls", help="Show urls.", show_default=True)
 @click.option(
     "-l",
     "--image-urls/--no-image-urls",

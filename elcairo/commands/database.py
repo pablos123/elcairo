@@ -55,6 +55,10 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
 
     script_dir: str = os.path.realpath(os.path.dirname(__file__))
     database_file: str = os.path.join(script_dir, "elcairo.db")
+    image_dir: str = os.path.join(script_dir, "images")
+    if not os.path.isdir(image_dir):
+        os.mkdir(image_dir)
+
     if os.path.exists(database_file):
         try:
             os.remove(database_file)
@@ -129,7 +133,9 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
                 movie_data["year"],
                 movie_data["age"],
                 movie_data["cost"],
-                database_functions.get_ascii_image(movie_data["image_url"], uid),
+                database_functions.download_image(
+                    movie_data["image_url"], uid, script_dir
+                ),
                 movie_data["image_url"],
                 " ".join(movie_data["urls"]),
             )

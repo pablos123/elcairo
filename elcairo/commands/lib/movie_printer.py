@@ -1,26 +1,43 @@
 """Print movies"""
 
+import os
+import subprocess
+
 import arrow
 import click
 from arrow import Arrow
-from colorama import Back, Fore, Style
+
+
+class EscapeSecs:
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    ITALIC = "\033[3m"
+    UNDERLINE = "\033[4m"
+
 
 DEFAULT = "[Nothing to show...]"
+WIDTH = 120
 
 
 def truncate(string: str, start_len: int = 0):
     """
-    Truncate a string to only be 80 characters long.
-    start_len represents the lenght of a title for the string.
+    Truncate a string to only be WIDTH characters long.
+    start_len represents the length of a title for the string.
     """
-    first_line_len: int = 80 - start_len
+    first_line_len: int = WIDTH - start_len
 
     if len(string) <= first_line_len:
         return string.replace("\n", " ").strip()
 
     out: str = ""
     lines: list[str] = [string[0:first_line_len]]
-    lines.extend([string[i : i + 80] for i in range(first_line_len, len(string), 80)])
+    lines.extend(
+        [string[i : i + WIDTH] for i in range(first_line_len, len(string), WIDTH)]
+    )
     for line in lines:
         out += f"{line}\n"
 
@@ -54,7 +71,7 @@ class MoviePrinter:
             click.echo()
 
             if self.separator:
-                click.echo(f"{Back.WHITE}{Fore.BLACK}{80*'-'}{Style.RESET_ALL}\n")
+                click.echo(f"{WIDTH * '*'}\n")
 
             self.echo_title(movie)
 
@@ -94,18 +111,25 @@ class MoviePrinter:
 
         date: str = get_nice_date(movie["date"])
 
-        click.echo(f"{Style.BRIGHT}{Style.BRIGHT}{name}{Style.RESET_ALL}   {date}")
+        title_len: int = len(f"{name}    {date}")
+
+        click.echo(
+            f"{EscapeSecs.BOLD}{' ' * (int((WIDTH - title_len) / 2))}{EscapeSecs.UNDERLINE}{EscapeSecs.GREEN}{name}{EscapeSecs.RESET}    {EscapeSecs.BOLD}{EscapeSecs.UNDERLINE}{EscapeSecs.BLUE}{date}{EscapeSecs.RESET}"
+        )
 
     @staticmethod
     def echo_image(movie: dict) -> None:
-        """Echo an image."""
+        """Echo an image only works for wezterm terminal emulator."""
 
         image: str = movie["image"] or DEFAULT
-        click.echo(f"\n{image}")
+        if os.getenv("TERM_PROGRAM") == "WezTerm":
+            subprocess.run(["wezterm", "imgcat", "--width", str(WIDTH), f"{image}"])
+        else:
+            click.echo("Images are only supported inside wezterm terminal emulator.")
 
     @staticmethod
     def echo_image_url(movie: dict) -> None:
-        """Echo an image."""
+        """Echo the image url."""
 
         image_url: str = movie["image_url"] or DEFAULT
         click.echo(f"\n{image_url}")
@@ -117,20 +141,20 @@ class MoviePrinter:
         def echo_extra_info_data(
             data: str,
             title: str,
-            color: str = Fore.YELLOW,
+            color: str = EscapeSecs.YELLOW,
         ) -> None:
             """Echo data in the extra info."""
 
             if not data:
                 data = DEFAULT
 
-            click.echo(f"{color}{title}{Style.RESET_ALL}{truncate(data, len(title))}")
+            click.echo(f"{color}{title}{EscapeSecs.RESET}{truncate(data, len(title))}")
 
         synopsis = movie["synopsis"] or DEFAULT
 
-        click.echo(f"\n{Style.DIM}{truncate(synopsis)}{Style.RESET_ALL}\n")
+        click.echo(f"\n{EscapeSecs.ITALIC}{truncate(synopsis)}{EscapeSecs.RESET}\n")
 
-        click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}")
+        click.echo(f"{WIDTH * '-'}")
 
         echo_extra_info_data(movie["direction"], "Dirección: ")
         echo_extra_info_data(movie["cast"], "Elenco: ")
@@ -139,16 +163,15 @@ class MoviePrinter:
         echo_extra_info_data(movie["origin"], "Origen: ")
         echo_extra_info_data(movie["year"], "Año: ")
         echo_extra_info_data(movie["age"], "Calificación: ")
+        echo_extra_info_data(movie["cost"], "Valor: ")
 
-        click.echo(f"{Style.BRIGHT}{80*'*'}{Style.RESET_ALL}\n")
-
-        echo_extra_info_data(movie["cost"], "Valor: ", Fore.GREEN)
+        click.echo(f"{WIDTH * '-'}")
 
     @staticmethod
     def echo_urls(movie: dict) -> None:
         """Add new lines to the urls list."""
 
-        click.echo(f"\n{Fore.YELLOW}Más info:{Style.RESET_ALL}")
+        click.echo(f"\n{EscapeSecs.YELLOW}URLS:{EscapeSecs.RESET}")
         if not movie["urls"]:
             click.echo(DEFAULT)
 

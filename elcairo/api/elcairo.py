@@ -244,10 +244,7 @@ class ElCairo:
 
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:
-        """
-        Get the image url if the mime type is a valid image mime type
-        and is supported by climage.
-        """
+        """Get the image url if the mime type is a valid image mime type."""
 
         def check_mime(mime: str) -> Match[str] | None:
             """

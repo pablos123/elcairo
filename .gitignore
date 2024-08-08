@@ -1,5 +1,6 @@
 __pycache__
 elcairo.db
+*.jpeg
 .mypy_cache
 build
 elcairo.egg-info
