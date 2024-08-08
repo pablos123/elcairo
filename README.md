@@ -25,3 +25,4 @@ elcairo --help
 ```
 elcairo shows --images upcoming
 ```
+![new_readme](https://github.com/user-attachments/assets/f5ba0b60-06bc-41d2-8662-e3dc9a9e6bc0)
