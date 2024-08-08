@@ -1,6 +1,6 @@
 # elcairo
 
-CLI que muestra las películas que van a pasar en el cine El Cairo de Rosario.
+CLI para ver las funciones del cine El Cairo de Rosario.
 
 La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 
