@@ -1,5 +1,6 @@
 """Functions used in the database command."""
 
+import os
 import shutil
 import threading
 from time import sleep
@@ -14,7 +15,7 @@ def download_image(url: str, uid: str, script_dir: str) -> str:
     try:
         response: requests.Response = requests.get(url, stream=True, timeout=3)
         response.raise_for_status()
-        file_name: str = f"{script_dir}/images/{uid}.jpeg"
+        file_name: str = os.path.join(script_dir, "images", f"{uid}.jpeg")
         with open(file_name, "wb") as image_file:
             shutil.copyfileobj(response.raw, image_file)
     except (
