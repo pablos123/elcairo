@@ -12,7 +12,7 @@ La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 pipx install git+https://github.com/pablos123/elcairo.git && elcairo database populate
 ```
 
-> Requires Python >=3.12.
+> Requires Python >=3.10.
 
 ### Run
 
