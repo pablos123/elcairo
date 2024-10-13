@@ -102,7 +102,7 @@ class MoviePrinter:
             if not event_date:
                 return DEFAULT
 
-            arrow_date: Arrow = arrow.get(event_date)
+            arrow_date: "Arrow" = arrow.get(event_date)
             format_date: str = arrow_date.format(
                 "dddd DD-MM-YYYY HH:mm:ss", locale="es"
             ).capitalize()
