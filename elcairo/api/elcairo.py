@@ -2,11 +2,6 @@
 Cine El Cairo API
 """
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from typing import Container, Match
-
 import json
 import re
 import time
@@ -15,6 +10,11 @@ import arrow
 import bs4
 import ics
 import requests
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Container, Match
 
 
 class ElCairo:

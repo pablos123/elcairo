@@ -5,7 +5,11 @@ import subprocess
 
 import arrow
 import click
-from arrow import Arrow
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from arrow import Arrow
 
 
 class EscapeSecs:
