@@ -2,10 +2,14 @@
 Cine El Cairo API
 """
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Container, Match
+
 import json
 import re
 import time
-from typing import Container, Match, Set, Tuple
 
 import arrow
 import bs4
@@ -16,7 +20,7 @@ import requests
 class ElCairo:
     """Get El Cairo's movie shows information."""
 
-    def events_to_json(self, events: Set[ics.Event]) -> str:
+    def events_to_json(self, events: set[ics.Event]) -> str:
         """
         Returns a json of events.
         This method scraps for more info in the specified event url.
@@ -60,7 +64,7 @@ class ElCairo:
 
         return json.dumps(events_dict)
 
-    def get_upcoming_shows_event(self) -> Set[ics.Event]:
+    def get_upcoming_shows_event(self) -> set[ics.Event]:
         """Get upcoming movie shows events."""
 
         now: arrow.Arrow = arrow.now()
@@ -68,7 +72,7 @@ class ElCairo:
         year: int = now.year
         month: int = now.month
 
-        upcoming_events: Set[ics.Event] = set()
+        upcoming_events: set[ics.Event] = set()
         current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
@@ -84,7 +88,7 @@ class ElCairo:
                 )
                 continue
 
-            current_upcoming_events: Set[ics.Event] = set()
+            current_upcoming_events: set[ics.Event] = set()
             for event in current_events:
                 if event.begin >= now:
                     current_upcoming_events.add(event)
@@ -97,7 +101,7 @@ class ElCairo:
 
         return upcoming_events
 
-    def get_past_shows_event(self) -> Set[ics.Event]:
+    def get_past_shows_event(self) -> set[ics.Event]:
         """Get past movie shows events."""
 
         now: arrow.Arrow = arrow.now()
@@ -105,7 +109,7 @@ class ElCairo:
         year: int = now.year
         month: int = now.month
 
-        past_events: Set[ics.Event] = set()
+        past_events: set[ics.Event] = set()
         current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
@@ -121,7 +125,7 @@ class ElCairo:
                 )
                 continue
 
-            current_past_events: Set[ics.Event] = set()
+            current_past_events: set[ics.Event] = set()
             for event in current_events:
                 if event.begin <= now:
                     current_past_events.add(event)
@@ -134,10 +138,10 @@ class ElCairo:
 
         return past_events
 
-    def get_all_shows_event(self) -> Set[ics.Event]:
+    def get_all_shows_event(self) -> set[ics.Event]:
         """Get all movie shows events."""
 
-        all_events: Set[ics.Event] = set()
+        all_events: set[ics.Event] = set()
         all_events.update(self.get_past_shows_event())
         all_events.update(self.get_upcoming_shows_event())
 
@@ -146,19 +150,19 @@ class ElCairo:
     def get_upcoming_shows_json(self) -> str:
         """Get upcoming movie shows events as json."""
 
-        upcoming_events: Set[ics.Event] = self.get_upcoming_shows_event()
+        upcoming_events: set[ics.Event] = self.get_upcoming_shows_event()
         return self.events_to_json(upcoming_events)
 
     def get_past_shows_json(self) -> str:
         """Get past movie shows events."""
 
-        past_events: Set[ics.Event] = self.get_past_shows_event()
+        past_events: set[ics.Event] = self.get_past_shows_event()
         return self.events_to_json(past_events)
 
     def get_all_shows_json(self) -> str:
         """Get all movie shows events."""
 
-        all_events: Set[ics.Event] = self.get_all_shows_event()
+        all_events: set[ics.Event] = self.get_all_shows_event()
         return self.events_to_json(all_events)
 
     def get_extra_info(self, url: str) -> dict:
@@ -263,7 +267,7 @@ class ElCairo:
         return image_url
 
     @staticmethod
-    def fetch_events(year: str, month: str) -> Tuple[Set[ics.Event], bool]:
+    def fetch_events(year: str, month: str) -> tuple[set[ics.Event], bool]:
         """Fetch the ics file of the year-month date."""
 
         time.sleep(0.5)
@@ -282,7 +286,7 @@ class ElCairo:
             raise get_error
 
         error: bool = False
-        events: Set[ics.Event] = set()
+        events: set[ics.Event] = set()
         try:
             events = ics.Calendar(response.text).events
         except ValueError:
