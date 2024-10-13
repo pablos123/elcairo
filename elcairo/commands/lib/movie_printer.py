@@ -7,7 +7,6 @@ import arrow
 import click
 
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from arrow import Arrow
 
