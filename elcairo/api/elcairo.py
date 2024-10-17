@@ -12,8 +12,7 @@ import ics
 import requests
 
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from typing import Container, Match
+from typing import Container, Match
 
 
 class ElCairo:
@@ -246,10 +245,10 @@ class ElCairo:
         return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
 
     @staticmethod
-    def get_image(extra_info: list["Container"]) -> str:
+    def get_image(extra_info: list[Container]) -> str:
         """Get the image url if the mime type is a valid image mime type."""
 
-        def check_mime(mime: str) -> "Match[str]" | None:
+        def check_mime(mime: str) -> Match[str] | None:
             """
             Check if the extra info of a 'elcairo' type event
             is a 'file' and if the mime type is correct.
