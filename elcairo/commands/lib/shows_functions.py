@@ -30,7 +30,7 @@ def query(
 
 def cursor_init(ctx: click.Context) -> None:
     """Initialize the cursor and the printer."""
-    script_dir: Path = Path(__file__).resolve().parent
+    script_dir: Path = Path(__file__).parent.resolve()
     database_file: Path = script_dir / ".." / "elcairo.db"
 
     if not database_file.exists():
