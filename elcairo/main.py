@@ -30,5 +30,4 @@ elcairo.add_command(shows)
 
 def main():
     """Execute elcairo."""
-
     elcairo(obj={})

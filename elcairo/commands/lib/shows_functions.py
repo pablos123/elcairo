@@ -1,7 +1,7 @@
 """Functions used in the shows command."""
 
-import os
 import sqlite3
+from pathlib import Path
 
 import arrow
 import click
@@ -13,7 +13,6 @@ def query(
     cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order: str
 ) -> list[dict]:
     """Execute query."""
-
     movies: list = []
     try:
         res: sqlite3.Cursor = cursor.execute(
@@ -31,11 +30,10 @@ def query(
 
 def cursor_init(ctx: click.Context) -> None:
     """Initialize the cursor and the printer."""
+    script_dir: Path = Path(__file__).resolve().parent
+    database_file: Path = script_dir / ".." / "elcairo.db"
 
-    script_dir = os.path.realpath(os.path.dirname(__file__))
-    database_file = os.path.join(script_dir, "..", "elcairo.db")
-
-    if not os.path.exists(database_file):
+    if not database_file.exists():
         click.echo("Create the database first!")
         ctx.exit(1)
 
@@ -46,6 +44,7 @@ def cursor_init(ctx: click.Context) -> None:
 
 
 def printer_init(ctx: click.Context) -> None:
+    """Initialize the MoviePrinter given the click args passed."""
     ctx.obj["printer"] = MoviePrinter(
         images=ctx.obj["images"],
         extra_info=ctx.obj["extra_info"],
@@ -57,7 +56,6 @@ def printer_init(ctx: click.Context) -> None:
 
 def next_sunday() -> arrow.Arrow:
     """Arrow object of next sunday."""
-
     date: arrow.Arrow = arrow.now()
     while date.weekday() != 6:
         date = date.dehumanize("in a day")
@@ -66,7 +64,6 @@ def next_sunday() -> arrow.Arrow:
 
 def next_saturday() -> arrow.Arrow:
     """Arrow object of the next saturday."""
-
     date: arrow.Arrow = arrow.now()
     while date.weekday() != 5:
         date = date.dehumanize("in a day")
@@ -74,12 +71,10 @@ def next_saturday() -> arrow.Arrow:
 
 
 def day_start(date: arrow.Arrow) -> int:
-    """Int representation of the start of the day of date."""
-
+    """Integer representation of the start of the day of date."""
     return int(date.floor("day").format("YYYYMMDDHHmm"))
 
 
 def day_end(date: arrow.Arrow) -> int:
-    """Int representation of the end of the day of date."""
-
+    """Integer representation of the end of the day of date."""
     return int(date.ceil("day").format("YYYYMMDDHHmm"))

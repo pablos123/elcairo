@@ -65,7 +65,6 @@ def shows(
 @click.pass_context
 def today(ctx: click.Context) -> None:
     """Today's movie shows."""
-
     now: arrow.Arrow = arrow.now()
     movies: list[dict] = shows_functions.query(
         cursor=ctx.obj["cursor"],
@@ -80,7 +79,6 @@ def today(ctx: click.Context) -> None:
 @click.pass_context
 def tomorrow(ctx: click.Context) -> None:
     """Tomorrow's movie shows."""
-
     tomorrow: arrow.Arrow = arrow.now().dehumanize("in a day")
     movies: list[dict] = shows_functions.query(
         cursor=ctx.obj["cursor"],
@@ -95,7 +93,6 @@ def tomorrow(ctx: click.Context) -> None:
 @click.pass_context
 def week(ctx: click.Context) -> None:
     """Movie shows until next sunday."""
-
     movies: list[dict] = shows_functions.query(
         cursor=ctx.obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
@@ -130,7 +127,6 @@ def weekend(ctx: click.Context) -> None:
 @click.pass_context
 def day(ctx: click.Context, date: datetime.datetime) -> None:
     """Movie shows of a given date."""
-
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
@@ -173,7 +169,6 @@ def until(ctx: click.Context, date: datetime.datetime) -> None:
 @click.pass_context
 def upcoming(ctx: click.Context) -> None:
     """Upcoming movie shows."""
-
     movies: list[dict] = shows_functions.query(
         cursor=ctx.obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),

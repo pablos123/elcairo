@@ -3,6 +3,8 @@ elcairo.db
 *.jpeg
 .mypy_cache
 build
+images
+db_lock_file
 elcairo.egg-info
 el-cairo-872567b6880.ics
 el-cairo-98e31149e1a.ics

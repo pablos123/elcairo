@@ -1,17 +1,14 @@
 """Database command group."""
 
-import functools
-import json
-import os
 import sqlite3
-import threading
+from pathlib import Path
 
 import arrow
 import click
 import ics
 
 import elcairo.commands.lib.database_functions as database_functions
-from elcairo.api.elcairo import ElCairo
+from elcairo.api.elcairo import ElCairo, ElCairoEvent
 
 
 @click.group()
@@ -21,51 +18,50 @@ from elcairo.api.elcairo import ElCairo
 @click.pass_context
 def database(ctx: click.Context, silent: bool) -> None:
     """Database operations."""
-
-    if not silent:
-        click.echo("📽️ Executing tasks 📽️")
-
     ctx.obj["silent"] = silent
-
-    def bye_msg(silent: bool):
-        if not silent:
-            click.echo("📽️ All finished 📽️")
-
-    bye_call = functools.partial(bye_msg, silent)
-    ctx.call_on_close(bye_call)
 
 
 @database.command()
 @click.option(
     "-i",
     "--ics-file",
-    help="Read from a .ics instead of calling the API. (Just for testing .ics files. This will not populate the DB.)",
+    help="Read from a .ics instead of calling the API."
+    " (Just for testing .ics files. This will not populate the DB.)",
     type=click.Path(exists=True),
     required=False,
 )
 @click.pass_context
 def populate(ctx: click.Context, ics_file: click.Path) -> None:
     """Populate the database."""
+    silent: bool = ctx.obj["silent"]
+
+    if not silent:
+        click.echo("Populating the database...")
 
     if ics_file:
-        with open(str(ics_file), "r") as file:
+        if not silent:
+            click.echo(f"Reading .ics file {ics_file}...")
+        with Path(str(ics_file)).open() as file:
             calendar_text: str = file.read()
             ics.Calendar(calendar_text)
         ctx.exit(0)
 
-    script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "elcairo.db")
-    image_dir: str = os.path.join(script_dir, "images")
-    if not os.path.isdir(image_dir):
-        os.mkdir(image_dir)
+    script_dir: Path = Path(__file__).parent.resolve()
+    lock_file: Path = script_dir / "db_lock_file"
+    if lock_file.exists():
+        if not silent:
+            click.echo("The database is being populated!")
+            click.echo("(If you consider this an error run the clean command)")
+        ctx.exit(1)
 
-    if os.path.exists(database_file):
-        try:
-            os.remove(database_file)
-        except OSError:
-            if not ctx.obj["silent"]:
-                click.echo("Cannot remove elcairo.db, try again...")
-            ctx.exit(1)
+    # Lock database operations
+    lock_file.touch()
+
+    image_dir: Path = script_dir / "images"
+    image_dir.mkdir(exist_ok=True)
+
+    database_file: Path = script_dir / "elcairo.db"
+    database_file.unlink(missing_ok=True)
 
     connection = sqlite3.connect(database_file)
 
@@ -91,71 +87,47 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         urls TEXT NOT NULL
     );"""
 
-    if not ctx.obj["silent"]:
+    if not silent:
         click.echo(f"Using database {database_file}")
         click.echo("Creating the table...")
 
     cursor.execute(create_query)
 
-    def get_events(events_dict: dict):
-        elcairo: ElCairo = ElCairo()
-        events_dict.update(json.loads(elcairo.get_upcoming_shows_json()))
+    if not silent:
+        click.echo("Fetching data...")
 
-    events_dict: dict = {}
-    thread_fetch: threading.Thread = threading.Thread(
-        target=get_events, args=(events_dict,)
-    )
+    elcairo: ElCairo = ElCairo()
+    events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_shows_json()
 
-    thread_fetch.start()
-
-    if not ctx.obj["silent"]:
-        # This will wait for thread to finish
-        database_functions.loading("Fetching data", thread_fetch)
-
-    # If you go silent wait for the thread, anyway close the thread safely
-    thread_fetch.join()
-
-    if not ctx.obj["silent"]:
+    if not silent:
+        click.echo("Fetching data...")
         click.echo(f"Fetched {len(events_dict)} movies...")
 
-    def create_events(events_dict: dict, data_insert: list):
-        for uid, movie_data in events_dict.items():
-            event = (
-                movie_data["name"],
-                str(arrow.get(movie_data["date"])),
-                int(arrow.get(movie_data["date"]).format("YYYYMMDDHHmm")),
-                movie_data["synopsis"],
-                movie_data["direction"],
-                movie_data["cast"],
-                movie_data["genre"],
-                movie_data["duration"],
-                movie_data["origin"],
-                movie_data["year"],
-                movie_data["age"],
-                movie_data["cost"],
-                database_functions.download_image(
-                    movie_data["image_url"], uid, script_dir
-                ),
-                movie_data["image_url"],
-                " ".join(movie_data["urls"]),
-            )
-            data_insert.append(event)
-
     data_insert: list = []
-    thread_events: threading.Thread = threading.Thread(
-        target=create_events,
-        args=(
-            events_dict,
-            data_insert,
-        ),
-    )
+    for event_uid, elcairo_event in events_dict.items():
+        event = (
+            elcairo_event.name,
+            str(arrow.get(elcairo_event.date)),
+            int(arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")),
+            elcairo_event.synopsis,
+            elcairo_event.extra_info.direction,
+            elcairo_event.extra_info.cast,
+            elcairo_event.extra_info.genre,
+            elcairo_event.extra_info.duration,
+            elcairo_event.extra_info.origin,
+            elcairo_event.extra_info.year,
+            elcairo_event.extra_info.age,
+            elcairo_event.cost,
+            database_functions.download_image(
+                elcairo_event.image_url, event_uid, script_dir
+            ),
+            elcairo_event.image_url,
+            " ".join(elcairo_event.urls),
+        )
+        data_insert.append(event)
 
-    thread_events.start()
-
-    if not ctx.obj["silent"]:
-        database_functions.loading("Creating events", thread_events)
-
-    thread_events.join()
+    if not silent:
+        "Creating events..."
 
     cursor.executemany(
         """
@@ -180,30 +152,30 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         data_insert,
     )
 
-    if not ctx.obj["silent"]:
+    if not silent:
         click.echo("Populating the table...")
 
     connection.commit()
+
+    # Unlock database operations
+    lock_file.unlink()
 
 
 @database.command()
 @click.pass_context
 def clean(ctx: click.Context) -> None:
     """Clean the database."""
+    silent = ctx.obj["silent"]
 
-    if not ctx.obj["silent"]:
-        click.echo("Deleting the database...")
+    if not silent:
+        click.echo("Cleaning the database...")
 
-    script_dir: str = os.path.realpath(os.path.dirname(__file__))
-    database_file: str = os.path.join(script_dir, "elcairo.db")
-    if not os.path.exists(database_file):
-        if not ctx.obj["silent"]:
-            click.echo("The database does not exists!")
-        ctx.exit(1)
+    script_dir: Path = Path(__file__).parent.resolve()
+    lock_file: Path = script_dir / "db_lock_file"
+    database_file: Path = script_dir / "elcairo.db"
 
-    try:
-        os.remove(database_file)
-    except OSError:
-        if not ctx.obj["silent"]:
-            click.echo("Cannot remove elcairo.db, try again...")
-        ctx.exit(1)
+    database_file.unlink(missing_ok=True)
+    lock_file.unlink(missing_ok=True)
+
+    if not silent:
+        click.echo("Database cleaned!")

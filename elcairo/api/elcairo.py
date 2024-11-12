@@ -2,69 +2,79 @@
 Cine El Cairo API
 """
 
-import json
 import re
 import time
+from collections.abc import Container
+from dataclasses import dataclass, field
+from re import Match
 
 import arrow
 import bs4
 import ics
 import requests
 
-from typing import TYPE_CHECKING
-from typing import Container, Match
+
+@dataclass
+class ElCairoExtraInfo:
+    direction: str = ""
+    cast: str = ""
+    genre: str = ""
+    duration: str = ""
+    origin: str = ""
+    year: str = ""
+    age: str = ""
+
+
+@dataclass
+class ElCairoEvent:
+    name: str = ""
+    date: str = ""
+    synopsis: str = ""
+    cost: str = ""
+    image_url: str = ""
+    urls: list[str] = field(default_factory=list)
+    extra_info: ElCairoExtraInfo = field(default_factory=ElCairoExtraInfo)
 
 
 class ElCairo:
     """Get El Cairo's movie shows information."""
 
-    def events_to_json(self, events: set[ics.Event]) -> str:
+    def ics_events_to_elcairo_events(
+        self, events: set[ics.Event]
+    ) -> dict[str, ElCairoEvent]:
         """
         Returns a json of events.
         This method scraps for more info in the specified event url.
         """
-
-        events_dict: dict = {}
+        events_dict: dict[str, ElCairoEvent] = {}
 
         for event in events:
-            parsed_dict: dict = {
-                "name": "",
-                "date": "",
-                "synopsis": "",
-                "cost": "",
-                "cast": "",
-                "direction": "",
-                "genre": "",
-                "duration": "",
-                "origin": "",
-                "year": "",
-                "age": "",
-                "image_url": "",
-                "urls": [],
-            }
+            elcairo_event_args: dict = {}
 
             if event.name:
-                parsed_dict["name"] = event.name.upper()
+                elcairo_event_args["name"] = event.name.upper()
 
             if event.begin:
-                parsed_dict["date"] = str(event.begin)
-
-            if event.url:
-                parsed_dict["urls"] = [event.url, self.modify_url(event.url)]
-
-            if event.url:
-                parsed_dict.update(self.get_extra_info(event.url))
+                elcairo_event_args["date"] = str(event.begin)
 
             if event.extra:
-                parsed_dict["image_url"] = self.get_image(event.extra)
+                elcairo_event_args["image_url"] = self.get_image(event.extra)
 
-            events_dict[event.uid] = parsed_dict
+            if event.url:
+                elcairo_event_args["urls"] = [event.url, self.modify_url(event.url)]
 
-        return json.dumps(events_dict)
+                soup: bs4.BeautifulSoup | None = self.get_soup(event.url)
+                if soup is not None:
+                    elcairo_event_args["synopsis"] = self.get_synopsis(soup)
+                    elcairo_event_args["cost"] = self.get_cost(soup)
+                    elcairo_event_args["extra_info"] = self.get_extra_info(soup)
+
+            events_dict[event.uid] = ElCairoEvent(**elcairo_event_args)
+
+        return events_dict
 
     def get_upcoming_shows_event(self) -> set[ics.Event]:
         """Get upcoming movie shows events."""
-
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
@@ -101,7 +111,6 @@ class ElCairo:
 
     def get_past_shows_event(self) -> set[ics.Event]:
         """Get past movie shows events."""
-
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
@@ -138,36 +147,28 @@ class ElCairo:
 
     def get_all_shows_event(self) -> set[ics.Event]:
         """Get all movie shows events."""
-
         all_events: set[ics.Event] = set()
         all_events.update(self.get_past_shows_event())
         all_events.update(self.get_upcoming_shows_event())
-
         return all_events
 
-    def get_upcoming_shows_json(self) -> str:
+    def get_upcoming_shows_json(self) -> dict[str, ElCairoEvent]:
         """Get upcoming movie shows events as json."""
-
         upcoming_events: set[ics.Event] = self.get_upcoming_shows_event()
-        return self.events_to_json(upcoming_events)
+        return self.ics_events_to_elcairo_events(upcoming_events)
 
-    def get_past_shows_json(self) -> str:
+    def get_past_shows_json(self) -> dict[str, ElCairoEvent]:
         """Get past movie shows events."""
-
         past_events: set[ics.Event] = self.get_past_shows_event()
-        return self.events_to_json(past_events)
+        return self.ics_events_to_elcairo_events(past_events)
 
-    def get_all_shows_json(self) -> str:
+    def get_all_shows_json(self) -> dict[str, ElCairoEvent]:
         """Get all movie shows events."""
-
         all_events: set[ics.Event] = self.get_all_shows_event()
-        return self.events_to_json(all_events)
+        return self.ics_events_to_elcairo_events(all_events)
 
-    def get_extra_info(self, url: str) -> dict:
-        """Get the extra info inside a El Cairo's url."""
-
-        extra_info: dict = {}
-
+    def get_soup(self, url: str) -> bs4.BeautifulSoup | None:
+        """Get the beautiful soup of El Cairo's url."""
         try:
             response: requests.Response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -177,71 +178,72 @@ class ElCairo:
             requests.exceptions.TooManyRedirects,
             requests.exceptions.RequestException,
         ):
-            # It's not important if I cannot get some of the info.
-            return extra_info
+            return None
 
         response_html: str = response.text
 
-        soup: bs4.BeautifulSoup = bs4.BeautifulSoup(response_html, "html.parser")
+        return bs4.BeautifulSoup(response_html, "html.parser")
 
-        synopsis: str = ""
-        synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
-        if synopsis_elem is not None and synopsis_elem.find("p") is not None:
-            synopsis = synopsis_elem.find("p").text
-        extra_info["synopsis"] = synopsis
-
-        data_elem: bs4.Tag | None = soup.select_one(".ficha-tecnica-online")
-        if data_elem is not None:
-            extra_info.update(self.get_extra_info_data(data_elem))
-
+    @staticmethod
+    def get_cost(soup: bs4.BeautifulSoup) -> str:
+        """Get the cost of a show inside a El Cairo's url."""
         cost: str = ""
         cost_elem: bs4.Tag | None = soup.select_one(".informacion-entradas")
         if cost_elem is not None and cost_elem.find("p") is not None:
-            cost = cost_elem.find("p").text
-        extra_info["cost"] = cost
-
-        return extra_info
+            cost = cost_elem.find("p").text  # pyright: ignore[reportOptionalMemberAccess]
+        return cost
 
     @staticmethod
-    def get_extra_info_data(data_elem: bs4.Tag) -> dict:
-        """Get the extra data in the extra information."""
+    def get_synopsis(soup: bs4.BeautifulSoup) -> str:
+        """Get the synopsis of a show inside a El Cairo's url."""
+        synopsis: str = ""
+        synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
+        if synopsis_elem is not None and synopsis_elem.find("p") is not None:
+            synopsis = synopsis_elem.find("p").text  # pyright: ignore[reportOptionalMemberAccess]
+        return synopsis
 
-        data: dict = {}
-        data_lines: list[str] = data_elem.text.split("\n")
-        if len(data_lines) == 0:
-            return data
+    @staticmethod
+    def get_extra_info(soup: bs4.BeautifulSoup) -> ElCairoExtraInfo:
+        """Get the extra info inside a El Cairo's url."""
+        extra_info_args: dict[str, str] = {}
+        data_elem: bs4.Tag | None = soup.select_one(".ficha-tecnica-online")
+        if data_elem is not None:
+            data_lines: list[str] = data_elem.text.split("\n")
+            if len(data_lines) == 0:
+                return ElCairoExtraInfo()
 
-        field_names: dict = {
-            "DIRECCIÓN": "direction",
-            "DIRECCION": "direction",
-            "ELENCO": "cast",
-            "GÉNERO": "genre",
-            "GENERO": "genre",
-            "DURACIÓN": "duration",
-            "DURACION": "duration",
-            "ORIGEN": "origin",
-            "AÑO": "year",
-            "CALIFICACIÓN": "age",
-            "CALIFICACION": "age",
-        }
+            field_names: dict = {
+                "DIRECCIÓN": "direction",
+                "DIRECCION": "direction",
+                "ELENCO": "cast",
+                "GÉNERO": "genre",
+                "GENERO": "genre",
+                "DURACIÓN": "duration",
+                "DURACION": "duration",
+                "ORIGEN": "origin",
+                "AÑO": "year",
+                "ANO": "year",
+                "CALIFICACIÓN": "age",
+                "CALIFICACION": "age",
+            }
 
-        for line in data_lines:
-            match = re.match(r"^ *(\w+): (.+)$", line)
-            if not match:
-                continue
+            for line in data_lines:
+                match = re.match(r"^ *(\w+): (.+)$", line)
+                if not match:
+                    continue
 
-            field_name: str = match.group(1)
-            field_data: str = match.group(2)
+                field_name: str = match.group(1)
+                field_data: str = match.group(2)
 
-            key: str | None = field_names.get(field_name)
-            if key is not None:
-                data[key] = field_data
-        return data
+                key: str | None = field_names.get(field_name)
+                if key is not None:
+                    extra_info_args[key] = field_data
+
+        return ElCairoExtraInfo(**extra_info_args)
 
     @staticmethod
     def modify_url(url: str) -> str:
         """Modify the url of the movie show to be the url that shows all the shows."""
-
         return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
 
     @staticmethod
@@ -267,7 +269,6 @@ class ElCairo:
     @staticmethod
     def fetch_events(year: str, month: str) -> tuple[set[ics.Event], bool]:
         """Fetch the ics file of the year-month date."""
-
         time.sleep(0.5)
 
         ics_url: str = f"https://elcairocinepublico.gob.ar/cartelera-de-sala/{year}-{month}/?ical=1"

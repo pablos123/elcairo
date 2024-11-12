@@ -1,22 +1,20 @@
 """Functions used in the database command."""
 
-import os
 import shutil
-import threading
-from time import sleep
+from pathlib import Path
 
 import requests
-from progress.spinner import MoonSpinner
 
 
-def download_image(url: str, uid: str, script_dir: str) -> str:
-    """Download an image."""
+def download_image(url: str, uid: str, script_dir: Path) -> str:
+    """Download an image and returns the path to the file."""
+    file_path: Path | None = None
 
     try:
         response: requests.Response = requests.get(url, stream=True, timeout=3)
         response.raise_for_status()
-        file_name: str = os.path.join(script_dir, "images", f"{uid}.jpeg")
-        with open(file_name, "wb") as image_file:
+        file_path = script_dir / "images" / f"{uid}.jpeg"
+        with Path(file_path).open("wb") as image_file:
             shutil.copyfileobj(response.raw, image_file)
     except (
         requests.exceptions.HTTPError,
@@ -25,15 +23,6 @@ def download_image(url: str, uid: str, script_dir: str) -> str:
         requests.exceptions.RequestException,
         OSError,
     ):
-        file_name = ""
+        pass
 
-    return file_name
-
-
-def loading(task: str, thread: threading.Thread) -> None:
-    """Echo a task with a spinner."""
-
-    with MoonSpinner(task + "...  ") as spinner:
-        while thread.is_alive():
-            sleep(0.1)
-            spinner.next()
+    return str(file_path) if file_path is not None else ""

@@ -13,7 +13,6 @@ dependencies = [
   "click",
   "beautifulsoup4",
   "arrow",
-  "progress",
 ]
 
 description = "Cli program that print movies available for watching in El Cario cinema."
@@ -28,3 +27,24 @@ Repository = "https://github.com/pablos123/elcairo"
 
 [project.scripts]
 elcairo = "elcairo.main:main"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # path lib
+    "PTH",
+]
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 20
