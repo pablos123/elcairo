@@ -35,7 +35,7 @@ def cursor_init(ctx: click.Context) -> None:
 
     if not database_file.exists():
         click.echo("Create the database first!")
-        ctx.exit(1)
+        raise click.exceptions.Exit(1)
 
     connection = sqlite3.connect(database_file)
 

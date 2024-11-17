@@ -2,6 +2,7 @@
 
 import datetime
 import sys
+from pathlib import Path
 
 import arrow
 import click
@@ -59,6 +60,12 @@ def shows(
         ctx.obj["order"] = "ASC"
     shows_functions.cursor_init(ctx)
     shows_functions.printer_init(ctx)
+
+    script_dir: Path = Path(__file__).parent.resolve()
+    lock_file: Path = script_dir / "db_lock_file"
+    if lock_file.exists():
+        click.echo("The database is being populated!")
+        raise click.exceptions.Exit(1)
 
 
 @shows.command()

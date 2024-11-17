@@ -15,8 +15,14 @@ from elcairo.api.elcairo import ElCairo, ElCairoEvent
 @click.option(
     "-s", "--silent/--no-silent", help="Don't print anything.", show_default=True
 )
+@click.option(
+    "-f",
+    "--force/--no-force",
+    help="Force operations. Don't show prompts in clean command.",
+    show_default=True,
+)
 @click.pass_context
-def database(ctx: click.Context, silent: bool) -> None:
+def database(ctx: click.Context, silent: bool, force: bool) -> None:
     """Database operations."""
     ctx.obj["silent"] = silent
 
@@ -44,15 +50,14 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         with Path(str(ics_file)).open() as file:
             calendar_text: str = file.read()
             ics.Calendar(calendar_text)
-        ctx.exit(0)
+        raise click.exceptions.Exit(0)
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
     if lock_file.exists():
         if not silent:
             click.echo("The database is being populated!")
-            click.echo("(If you consider this an error run the clean command)")
-        ctx.exit(1)
+        raise click.exceptions.Exit(1)
 
     # Lock database operations
     lock_file.touch()
@@ -127,7 +132,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         data_insert.append(event)
 
     if not silent:
-        "Creating events..."
+        click.echo("Creating events...")
 
     cursor.executemany(
         """
@@ -168,10 +173,15 @@ def clean(ctx: click.Context) -> None:
     silent = ctx.obj["silent"]
 
     if not silent:
-        click.echo("Cleaning the database...")
+        click.echo("Cleaning database...")
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
+    if lock_file.exists():
+        click.confirm(
+            "It seems that the database is being populated. Continue?", abort=True
+        )
+
     database_file: Path = script_dir / "elcairo.db"
 
     database_file.unlink(missing_ok=True)

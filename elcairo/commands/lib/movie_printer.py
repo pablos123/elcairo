@@ -5,21 +5,7 @@ import subprocess
 
 import arrow
 import click
-
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from arrow import Arrow
-
-
-class EscapeSecs:
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    BLUE = "\033[34m"
-    RESET = "\033[0m"
-    BOLD = "\033[1m"
-    ITALIC = "\033[3m"
-    UNDERLINE = "\033[4m"
+from arrow import Arrow
 
 
 DEFAULT = "[Nothing to show...]"
@@ -102,7 +88,7 @@ class MoviePrinter:
             if not event_date:
                 return DEFAULT
 
-            arrow_date: "Arrow" = arrow.get(event_date)
+            arrow_date: Arrow = arrow.get(event_date)
             format_date: str = arrow_date.format(
                 "dddd DD-MM-YYYY HH:mm:ss", locale="es"
             ).capitalize()
@@ -111,14 +97,17 @@ class MoviePrinter:
             return f"{format_date} ({human_date})"
 
         name: str = movie["name"] or DEFAULT
+        title_name: str = click.style(name, fg="green", bold=True, underline=True)
 
         date: str = get_nice_date(movie["date"])
+        title_date: str = click.style(date, fg="blue", bold=True, underline=True)
 
         title_len: int = len(f"{name}    {date}")
-
-        click.echo(
-            f"{EscapeSecs.BOLD}{' ' * (int((WIDTH - title_len) / 2))}{EscapeSecs.UNDERLINE}{EscapeSecs.GREEN}{name}{EscapeSecs.RESET}    {EscapeSecs.BOLD}{EscapeSecs.UNDERLINE}{EscapeSecs.BLUE}{date}{EscapeSecs.RESET}"
+        space_for_center = click.style(
+            f"{' ' * (int((WIDTH - title_len) / 2))}", bold=True
         )
+
+        click.echo(f"{space_for_center}{title_name}    {title_date}\n")
 
     @staticmethod
     def echo_image(movie: dict) -> None:
@@ -144,18 +133,18 @@ class MoviePrinter:
         def echo_extra_info_data(
             data: str,
             title: str,
-            color: str = EscapeSecs.YELLOW,
         ) -> None:
             """Echo data in the extra info."""
 
             if not data:
                 data = DEFAULT
 
-            click.echo(f"{color}{title}{EscapeSecs.RESET}{truncate(data, len(title))}")
+            title = click.style(title, fg="yellow")
+            click.echo(f"{title}{truncate(data, len(title))}")
 
         synopsis = movie["synopsis"] or DEFAULT
 
-        click.echo(f"\n{EscapeSecs.ITALIC}{truncate(synopsis)}{EscapeSecs.RESET}\n")
+        click.secho(truncate(synopsis), italic=True)
 
         click.echo(f"{WIDTH * '-'}")
 
@@ -174,7 +163,7 @@ class MoviePrinter:
     def echo_urls(movie: dict) -> None:
         """Add new lines to the urls list."""
 
-        click.echo(f"\n{EscapeSecs.YELLOW}URLS:{EscapeSecs.RESET}")
+        click.secho("URLS:", fg="yellow")
         if not movie["urls"]:
             click.echo(DEFAULT)
 
