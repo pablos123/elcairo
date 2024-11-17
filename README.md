@@ -25,4 +25,4 @@ elcairo --help
 ```
 elcairo shows --images upcoming
 ```
-![new_readme](https://github.com/user-attachments/assets/f5ba0b60-06bc-41d2-8662-e3dc9a9e6bc0)
+![hermosa_venganza](https://github.com/user-attachments/assets/2a36ac7c-d00a-4c37-9e15-f51186c79798)
