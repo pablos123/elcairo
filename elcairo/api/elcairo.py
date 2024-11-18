@@ -32,7 +32,7 @@ class ElCairoEvent:
     synopsis: str = ""
     cost: str = ""
     image_url: str = ""
-    urls: list[str] = field(default_factory=list)
+    url: str = ""
     extra_info: ElCairoExtraInfo = field(default_factory=ElCairoExtraInfo)
 
 
@@ -61,7 +61,7 @@ class ElCairo:
                 elcairo_event_args["image_url"] = self.get_image(event.extra)
 
             if event.url:
-                elcairo_event_args["urls"] = [event.url, self.modify_url(event.url)]
+                elcairo_event_args["url"] = event.url
 
                 soup: bs4.BeautifulSoup | None = self.get_soup(event.url)
                 if soup is not None:
@@ -209,7 +209,7 @@ class ElCairo:
         data_elem: bs4.Tag | None = soup.select_one(".ficha-tecnica-online")
         if data_elem is not None:
             data_lines: list[str] = data_elem.text.split("\n")
-            if len(data_lines) == 0:
+            if data_lines.__len__() == 0:
                 return ElCairoExtraInfo()
 
             field_names: dict = {
@@ -240,11 +240,6 @@ class ElCairo:
                     extra_info_args[key] = field_data
 
         return ElCairoExtraInfo(**extra_info_args)
-
-    @staticmethod
-    def modify_url(url: str) -> str:
-        """Modify the url of the movie show to be the url that shows all the shows."""
-        return re.sub(r"\d+-\d+-\d+/(:?\d+/)?$", "", url)
 
     @staticmethod
     def get_image(extra_info: list[Container]) -> str:

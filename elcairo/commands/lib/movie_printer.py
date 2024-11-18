@@ -7,8 +7,7 @@ import arrow
 import click
 from arrow import Arrow
 
-
-DEFAULT = "[Nothing to show...]"
+DEFAULT = "[Nothing to show..]"
 WIDTH = 120
 
 
@@ -19,13 +18,12 @@ def truncate(string: str, start_len: int = 0):
     """
     first_line_len: int = WIDTH - start_len
 
-    if len(string) <= first_line_len:
+    if string.__len__() <= first_line_len:
         return string.replace("\n", " ").strip()
-
     out: str = ""
     lines: list[str] = [string[0:first_line_len]]
     lines.extend(
-        [string[i : i + WIDTH] for i in range(first_line_len, len(string), WIDTH)]
+        [string[i : i + WIDTH] for i in range(first_line_len, string.__len__(), WIDTH)]
     )
     for line in lines:
         out += f"{line}\n"
@@ -38,49 +36,103 @@ class MoviePrinter:
 
     def __init__(
         self,
+        name: bool,
+        date: bool,
         images: bool,
+        image_url: bool,
+        synopsis: bool,
         extra_info: bool,
+        url: bool,
         separator: bool,
-        urls: bool,
-        image_urls: bool,
     ):
+        self.name = name
+        self.date = date
         self.images = images
+        self.image_url = image_url
+        self.synopsis = synopsis
         self.extra_info = extra_info
+        self.url = url
         self.separator = separator
-        self.urls = urls
-        self.image_urls = image_urls
 
-    def echo_list(self, movies: list[dict]) -> None:
+    def echo_list(self, movies: list[dict] | None = None) -> None:
         """Print a list of movies."""
 
-        if movies == []:
+        if not movies:
             return
 
         for movie in movies:
-            click.echo()
-
             if self.separator:
-                click.echo(f"{WIDTH * '*'}\n")
+                click.echo(f"{WIDTH * '*'}")
 
-            self.echo_title(movie)
+            if (
+                self.name
+                or self.date
+                or self.images
+                or self.image_url
+                or self.synopsis
+                or self.extra_info
+                or self.url
+                or self.separator
+            ):
+                click.echo()
+
+            if self.name or self.date:
+                self.echo_title(movie, self.name, self.date)
 
             if self.images:
+                if self.name or self.date:
+                    click.echo()
                 self.echo_image(movie)
 
-            if self.image_urls:
+            if self.image_url:
+                if self.name or self.date or self.images:
+                    click.echo()
                 self.echo_image_url(movie)
+
+            if self.synopsis:
+                if self.name or self.date or self.images or self.image_url:
+                    click.echo()
+                self.echo_synopsis(movie)
 
             if self.extra_info:
                 self.echo_extra_info(movie)
 
-            if self.urls:
-                self.echo_urls(movie)
+            if self.url:
+                if not self.extra_info and (
+                    self.name or self.date or self.images or self.image_url
+                ):
+                    click.echo()
+                self.echo_url(movie)
 
+            if (
+                self.images
+                or self.image_url
+                or self.synopsis
+                or self.extra_info
+                or self.url
+                or self.separator
+            ):
+                click.echo()
+
+        if self.separator:
+            click.echo(f"{WIDTH * '*'}")
+
+        if not (
+            self.images
+            or self.image_url
+            or self.synopsis
+            or self.extra_info
+            or self.url
+            or self.separator
+        ):
             click.echo()
 
     @staticmethod
-    def echo_title(movie: dict) -> None:
+    def echo_title(movie: dict, name: bool = True, date: bool = True) -> None:
         """Echo the movie title with the date of the show."""
+
+        if not name and not date:
+            return
 
         def get_nice_date(event_date: str) -> str:
             """Format the date information a return a nice show's date"""
@@ -96,22 +148,68 @@ class MoviePrinter:
 
             return f"{format_date} ({human_date})"
 
-        name: str = movie["name"] or DEFAULT
-        title_name: str = click.style(name, fg="green", bold=True, underline=True)
+        name_styled: str = ""
+        date_styled: str = ""
+        title_len: int = 0
 
-        date: str = get_nice_date(movie["date"])
-        title_date: str = click.style(date, fg="blue", bold=True, underline=True)
+        if name:
+            name_str: str = movie["name"] or DEFAULT
+            title_len += name_str.__len__()
+            name_styled: str = click.style(
+                name_str, fg="green", bold=True, underline=True
+            )
 
-        title_len: int = len(f"{name}    {date}")
-        space_for_center = click.style(
-            f"{' ' * (int((WIDTH - title_len) / 2))}", bold=True
-        )
+        if date:
+            date_str: str = get_nice_date(movie["date"])
+            title_len += date_str.__len__()
+            date_styled: str = click.style(
+                date_str, fg="blue", bold=True, underline=True
+            )
 
-        click.echo(f"{space_for_center}{title_name}    {title_date}\n")
+        title_len += 4
+
+        space_for_center = f"{' ' * (int((WIDTH - title_len) / 2))}"
+
+        click.echo(f"{space_for_center}{name_styled}    {date_styled}")
+
+    @staticmethod
+    def echo_synopsis(movie: dict) -> None:
+        synopsis = movie["synopsis"] or DEFAULT
+        click.secho(truncate(synopsis), italic=True)
+
+    @staticmethod
+    def echo_extra_info(movie: dict) -> None:
+        """Echo extra info."""
+
+        def echo_extra_info_data(
+            name: str,
+            data: str,
+        ) -> None:
+            """Echo data in the extra info."""
+
+            if not data:
+                data = DEFAULT
+
+            click.echo(
+                f"{click.style(name, fg="yellow")}{truncate(data, name.__len__())}"
+            )
+
+        click.echo(f"{WIDTH * '-'}")
+
+        echo_extra_info_data("Dirección: ", movie["direction"])
+        echo_extra_info_data("Elenco: ", movie["cast"])
+        echo_extra_info_data("Género: ", movie["genre"])
+        echo_extra_info_data("Duración: ", movie["duration"])
+        echo_extra_info_data("Origen: ", movie["origin"])
+        echo_extra_info_data("Año: ", movie["year"])
+        echo_extra_info_data("Calificación: ", movie["age"])
+        echo_extra_info_data("Valor: ", movie["cost"])
+
+        click.echo(f"{WIDTH * '-'}")
 
     @staticmethod
     def echo_image(movie: dict) -> None:
-        """Echo an image only works for wezterm terminal emulator."""
+        """Echo an image. Only works for wezterm terminal emulator."""
 
         image: str = movie["image"] or DEFAULT
         if os.getenv("TERM_PROGRAM") == "WezTerm":
@@ -123,48 +221,19 @@ class MoviePrinter:
     def echo_image_url(movie: dict) -> None:
         """Echo the image url."""
 
-        image_url: str = movie["image_url"] or DEFAULT
-        click.echo(f"\n{image_url}")
+        if not movie["image_url"]:
+            click.echo(f"{DEFAULT}")
+            return
+
+        image_url: str = f"({movie['image_url']})"
+        space_for_center: str = f"{' ' * (int((WIDTH - image_url.__len__()) / 2))}"
+        click.echo(f"{space_for_center}{image_url}")
 
     @staticmethod
-    def echo_extra_info(movie: dict) -> None:
-        """Echo extra info."""
+    def echo_url(movie: dict) -> None:
+        """Echo url."""
 
-        def echo_extra_info_data(
-            data: str,
-            title: str,
-        ) -> None:
-            """Echo data in the extra info."""
-
-            if not data:
-                data = DEFAULT
-
-            title = click.style(title, fg="yellow")
-            click.echo(f"{title}{truncate(data, len(title))}")
-
-        synopsis = movie["synopsis"] or DEFAULT
-
-        click.secho(truncate(synopsis), italic=True)
-
-        click.echo(f"{WIDTH * '-'}")
-
-        echo_extra_info_data(movie["direction"], "Dirección: ")
-        echo_extra_info_data(movie["cast"], "Elenco: ")
-        echo_extra_info_data(movie["genre"], "Género: ")
-        echo_extra_info_data(movie["duration"], "Duración: ")
-        echo_extra_info_data(movie["origin"], "Origen: ")
-        echo_extra_info_data(movie["year"], "Año: ")
-        echo_extra_info_data(movie["age"], "Calificación: ")
-        echo_extra_info_data(movie["cost"], "Valor: ")
-
-        click.echo(f"{WIDTH * '-'}")
-
-    @staticmethod
-    def echo_urls(movie: dict) -> None:
-        """Add new lines to the urls list."""
-
-        click.secho("URLS:", fg="yellow")
-        if not movie["urls"]:
-            click.echo(DEFAULT)
-
-        click.echo(movie["urls"].replace(" ", "\n"))
+        url: str = movie["url"] or DEFAULT
+        click.echo(
+            f"{click.style("URL:", fg="yellow")} {click.style(url, italic=True)}"
+        )

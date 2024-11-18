@@ -46,11 +46,14 @@ def cursor_init(ctx: click.Context) -> None:
 def printer_init(ctx: click.Context) -> None:
     """Initialize the MoviePrinter given the click args passed."""
     ctx.obj["printer"] = MoviePrinter(
+        name=ctx.obj["name"],
+        date=ctx.obj["date"],
         images=ctx.obj["images"],
+        image_url=ctx.obj["image_url"],
+        synopsis=ctx.obj["synopsis"],
         extra_info=ctx.obj["extra_info"],
+        url=ctx.obj["url"],
         separator=ctx.obj["separator"],
-        urls=ctx.obj["urls"],
-        image_urls=ctx.obj["image_urls"],
     )
 
 

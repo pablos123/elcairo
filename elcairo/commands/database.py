@@ -1,14 +1,37 @@
 """Database command group."""
 
+import shutil
 import sqlite3
 from pathlib import Path
 
 import arrow
 import click
 import ics
+import requests
 
-import elcairo.commands.lib.database_functions as database_functions
 from elcairo.api.elcairo import ElCairo, ElCairoEvent
+
+
+def download_image(url: str, uid: str, script_dir: Path) -> str:
+    """Download an image and returns the path to the file."""
+    file_path: Path | None = None
+
+    try:
+        response: requests.Response = requests.get(url, stream=True, timeout=3)
+        response.raise_for_status()
+        file_path = script_dir / "images" / f"{uid}.jpeg"
+        with Path(file_path).open("wb") as image_file:
+            shutil.copyfileobj(response.raw, image_file)
+    except (
+        requests.exceptions.HTTPError,
+        requests.exceptions.Timeout,
+        requests.exceptions.TooManyRedirects,
+        requests.exceptions.RequestException,
+        OSError,
+    ):
+        pass
+
+    return str(file_path) if file_path is not None else ""
 
 
 @click.group()
@@ -18,7 +41,7 @@ from elcairo.api.elcairo import ElCairo, ElCairoEvent
 @click.option(
     "-f",
     "--force/--no-force",
-    help="Force operations. Don't show prompts in clean command.",
+    help="Force operations. Don't prompt in clean command.",
     show_default=True,
 )
 @click.pass_context
@@ -40,9 +63,6 @@ def database(ctx: click.Context, silent: bool, force: bool) -> None:
 def populate(ctx: click.Context, ics_file: click.Path) -> None:
     """Populate the database."""
     silent: bool = ctx.obj["silent"]
-
-    if not silent:
-        click.echo("Populating the database...")
 
     if ics_file:
         if not silent:
@@ -89,7 +109,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         cost TEXT NOT NULL,
         image TEXT NOT NULL,
         image_url TEXT NOT NULL,
-        urls TEXT NOT NULL
+        url TEXT NOT NULL
     );"""
 
     if not silent:
@@ -98,15 +118,16 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
 
     cursor.execute(create_query)
 
+    elcairo: ElCairo = ElCairo()
+
     if not silent:
         click.echo("Fetching data...")
 
-    elcairo: ElCairo = ElCairo()
     events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_shows_json()
 
     if not silent:
-        click.echo("Fetching data...")
-        click.echo(f"Fetched {len(events_dict)} movies...")
+        click.echo(f"Fetched {events_dict.__len__()} movies...")
+        click.echo("Creating events...")
 
     data_insert: list = []
     for event_uid, elcairo_event in events_dict.items():
@@ -123,16 +144,14 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
             elcairo_event.extra_info.year,
             elcairo_event.extra_info.age,
             elcairo_event.cost,
-            database_functions.download_image(
-                elcairo_event.image_url, event_uid, script_dir
-            ),
+            download_image(elcairo_event.image_url, event_uid, script_dir),
             elcairo_event.image_url,
-            " ".join(elcairo_event.urls),
+            elcairo_event.url,
         )
         data_insert.append(event)
 
     if not silent:
-        click.echo("Creating events...")
+        click.echo("Populating the table...")
 
     cursor.executemany(
         """
@@ -151,14 +170,11 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
             'cost',
             'image',
             'image_url',
-            'urls'
+            'url'
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
         data_insert,
     )
-
-    if not silent:
-        click.echo("Populating the table...")
 
     connection.commit()
 
@@ -184,8 +200,8 @@ def clean(ctx: click.Context) -> None:
 
     database_file: Path = script_dir / "elcairo.db"
 
-    database_file.unlink(missing_ok=True)
     lock_file.unlink(missing_ok=True)
+    database_file.unlink(missing_ok=True)
 
     if not silent:
         click.echo("Database cleaned!")

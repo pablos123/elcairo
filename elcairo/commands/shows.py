@@ -11,61 +11,80 @@ import elcairo.commands.lib.shows_functions as shows_functions
 
 
 @click.group()
-@click.option("-i", "--images/--no-images", help="Show images.", show_default=True)
 @click.option(
-    "-e",
-    "--extra-info/--no-extra-info",
-    help="Show extra info.",
-    default=True,
+    "-t", "--name/--no-name", help="Print name.", default=True, show_default=True
+)
+@click.option(
+    "-d", "--date/--no-date", help="Print date.", default=True, show_default=True
+)
+@click.option("-i", "--images/--no-images", help="Print image.", show_default=True)
+@click.option(
+    "-l",
+    "--image-url/--no-image-url",
+    help="Print image's url.",
     show_default=True,
 )
 @click.option(
     "-s",
-    "--separator/--no-separator",
-    help="Show the separator between movies.",
+    "--synopsis/--no-synopsis",
+    help="Print synopsis.",
+    default=True,
     show_default=True,
 )
-@click.option("-u", "--urls/--no-urls", help="Show urls.", show_default=True)
 @click.option(
-    "-l",
-    "--image-urls/--no-image-urls",
-    help="Show images' urls.",
+    "-e",
+    "--extra-info/--no-extra-info",
+    help="Print extra info.",
+    default=True,
+    show_default=True,
+)
+@click.option("-u", "--url/--no-url", help="Show url.", show_default=True)
+@click.option(
+    "-s",
+    "--separator/--no-separator",
+    help="Print separator.",
     show_default=True,
 )
 @click.option(
     "-r",
     "--reverse/--no-reverse",
-    help="Reverse order.",
+    help="Print in reverse order.",
     show_default=True,
 )
 @click.pass_context
 def shows(
     ctx: click.Context,
+    name: bool,
+    date: bool,
     images: bool,
+    image_url: bool,
+    synopsis: bool,
     extra_info: bool,
+    url: bool,
     separator: bool,
-    urls: bool,
-    image_urls: bool,
     reverse: bool,
 ):
     """Movie shows printer."""
-
-    ctx.obj["images"] = images
-    ctx.obj["extra_info"] = extra_info
-    ctx.obj["separator"] = separator
-    ctx.obj["urls"] = urls
-    ctx.obj["image_urls"] = image_urls
-    ctx.obj["order"] = "DESC"
-    if reverse:
-        ctx.obj["order"] = "ASC"
-    shows_functions.cursor_init(ctx)
-    shows_functions.printer_init(ctx)
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
     if lock_file.exists():
         click.echo("The database is being populated!")
         raise click.exceptions.Exit(1)
+
+    ctx.obj["name"] = name
+    ctx.obj["date"] = date
+    ctx.obj["images"] = images
+    ctx.obj["image_url"] = image_url
+    ctx.obj["synopsis"] = synopsis
+    ctx.obj["extra_info"] = extra_info
+    ctx.obj["url"] = url
+    ctx.obj["separator"] = separator
+    ctx.obj["order"] = "DESC"
+    if reverse:
+        ctx.obj["order"] = "ASC"
+    shows_functions.cursor_init(ctx)
+    shows_functions.printer_init(ctx)
 
 
 @shows.command()
