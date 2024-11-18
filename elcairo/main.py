@@ -1,4 +1,4 @@
-"""Print El Cairo cinema movie shows information."""
+"""Print El Cairo cinema events information."""
 
 import importlib.metadata
 

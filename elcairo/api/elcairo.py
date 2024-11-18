@@ -1,6 +1,4 @@
-"""
-Cine El Cairo API
-"""
+"""Cine El Cairo API"""
 
 import re
 import time
@@ -33,11 +31,12 @@ class ElCairoEvent:
     cost: str = ""
     image_url: str = ""
     url: str = ""
+    image_path: str = ""
     extra_info: ElCairoExtraInfo = field(default_factory=ElCairoExtraInfo)
 
 
 class ElCairo:
-    """Get El Cairo's movie shows information."""
+    """Get El Cairo's information."""
 
     def ics_events_to_elcairo_events(
         self, events: set[ics.Event]
@@ -73,8 +72,8 @@ class ElCairo:
 
         return events_dict
 
-    def get_upcoming_shows_event(self) -> set[ics.Event]:
-        """Get upcoming movie shows events."""
+    def get_upcoming_events(self) -> set[ics.Event]:
+        """Get upcoming events."""
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
@@ -109,8 +108,8 @@ class ElCairo:
 
         return upcoming_events
 
-    def get_past_shows_event(self) -> set[ics.Event]:
-        """Get past movie shows events."""
+    def get_past_events(self) -> set[ics.Event]:
+        """Get past events."""
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
@@ -145,26 +144,26 @@ class ElCairo:
 
         return past_events
 
-    def get_all_shows_event(self) -> set[ics.Event]:
-        """Get all movie shows events."""
+    def get_all_events(self) -> set[ics.Event]:
+        """Get all events."""
         all_events: set[ics.Event] = set()
-        all_events.update(self.get_past_shows_event())
-        all_events.update(self.get_upcoming_shows_event())
+        all_events.update(self.get_past_events())
+        all_events.update(self.get_upcoming_events())
         return all_events
 
-    def get_upcoming_shows_json(self) -> dict[str, ElCairoEvent]:
-        """Get upcoming movie shows events as json."""
-        upcoming_events: set[ics.Event] = self.get_upcoming_shows_event()
+    def get_upcoming_events_json(self) -> dict[str, ElCairoEvent]:
+        """Get upcoming events as json."""
+        upcoming_events: set[ics.Event] = self.get_upcoming_events()
         return self.ics_events_to_elcairo_events(upcoming_events)
 
-    def get_past_shows_json(self) -> dict[str, ElCairoEvent]:
-        """Get past movie shows events."""
-        past_events: set[ics.Event] = self.get_past_shows_event()
+    def get_past_events_json(self) -> dict[str, ElCairoEvent]:
+        """Get past events."""
+        past_events: set[ics.Event] = self.get_past_events()
         return self.ics_events_to_elcairo_events(past_events)
 
-    def get_all_shows_json(self) -> dict[str, ElCairoEvent]:
-        """Get all movie shows events."""
-        all_events: set[ics.Event] = self.get_all_shows_event()
+    def get_all_events_json(self) -> dict[str, ElCairoEvent]:
+        """Get all events."""
+        all_events: set[ics.Event] = self.get_all_events()
         return self.ics_events_to_elcairo_events(all_events)
 
     def get_soup(self, url: str) -> bs4.BeautifulSoup | None:
@@ -186,7 +185,7 @@ class ElCairo:
 
     @staticmethod
     def get_cost(soup: bs4.BeautifulSoup) -> str:
-        """Get the cost of a show inside a El Cairo's url."""
+        """Get the cost of an event inside a El Cairo's url."""
         cost: str = ""
         cost_elem: bs4.Tag | None = soup.select_one(".informacion-entradas")
         if cost_elem is not None and cost_elem.find("p") is not None:
@@ -195,7 +194,7 @@ class ElCairo:
 
     @staticmethod
     def get_synopsis(soup: bs4.BeautifulSoup) -> str:
-        """Get the synopsis of a show inside a El Cairo's url."""
+        """Get the synopsis of an event inside a El Cairo's url."""
         synopsis: str = ""
         synopsis_elem: bs4.Tag | None = soup.select_one(".sinopsis-online")
         if synopsis_elem is not None and synopsis_elem.find("p") is not None:

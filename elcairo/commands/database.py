@@ -48,6 +48,7 @@ def download_image(url: str, uid: str, script_dir: Path) -> str:
 def database(ctx: click.Context, silent: bool, force: bool) -> None:
     """Database operations."""
     ctx.obj["silent"] = silent
+    ctx.obj["force"] = force
 
 
 @database.command()
@@ -93,8 +94,8 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     cursor = connection.cursor()
 
     create_query = """
-    CREATE TABLE IF NOT EXISTS movies (
-        movie_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS events (
+        event_id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         date TEXT NOT NULL,
         compare_date INT NOT NULL,
@@ -107,7 +108,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         year TEXT NOT NULL,
         age TEXT NOT NULL,
         cost TEXT NOT NULL,
-        image TEXT NOT NULL,
+        image_path TEXT NOT NULL,
         image_url TEXT NOT NULL,
         url TEXT NOT NULL
     );"""
@@ -123,10 +124,10 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     if not silent:
         click.echo("Fetching data...")
 
-    events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_shows_json()
+    events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_events_json()
 
     if not silent:
-        click.echo(f"Fetched {events_dict.__len__()} movies...")
+        click.echo(f"Fetched {events_dict.__len__()} events...")
         click.echo("Creating events...")
 
     data_insert: list = []
@@ -155,7 +156,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
 
     cursor.executemany(
         """
-        INSERT INTO movies (
+        INSERT INTO events (
             'name',
             'date',
             'compare_date',
@@ -168,7 +169,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
             'year',
             'age',
             'cost',
-            'image',
+            'image_path',
             'image_url',
             'url'
         )
@@ -186,14 +187,15 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
 @click.pass_context
 def clean(ctx: click.Context) -> None:
     """Clean the database."""
-    silent = ctx.obj["silent"]
+    silent: bool = ctx.obj["silent"]
+    force: bool = ctx.obj["force"]
 
     if not silent:
         click.echo("Cleaning database...")
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
-    if lock_file.exists():
+    if lock_file.exists() and not force:
         click.confirm(
             "It seems that the database is being populated. Continue?", abort=True
         )

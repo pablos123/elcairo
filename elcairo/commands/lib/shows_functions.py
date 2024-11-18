@@ -6,26 +6,49 @@ from pathlib import Path
 import arrow
 import click
 
-from elcairo.commands.lib.movie_printer import MoviePrinter
+from elcairo.api.elcairo import ElCairoEvent, ElCairoExtraInfo
+from elcairo.commands.lib.events_printer import ElCairoEventsPrinter
+
+
+def create_elcairo_event(row: dict) -> ElCairoEvent:
+    extra_info: ElCairoExtraInfo = ElCairoExtraInfo(
+        direction=row["direction"],
+        cast=row["cast"],
+        genre=row["genre"],
+        duration=row["duration"],
+        origin=row["origin"],
+        year=row["year"],
+        age=row["age"],
+    )
+    return ElCairoEvent(
+        name=row["name"],
+        date=row["date"],
+        synopsis=row["synopsis"],
+        cost=row["cost"],
+        image_url=row["image_url"],
+        image_path=row["image_path"],
+        url=row["url"],
+        extra_info=extra_info,
+    )
 
 
 def query(
     cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order: str
-) -> list[dict]:
+) -> list[ElCairoEvent]:
     """Execute query."""
-    movies: list = []
+    events: list[ElCairoEvent] = []
     try:
         res: sqlite3.Cursor = cursor.execute(
             f"""
-            SELECT * FROM movies WHERE compare_date >= {date_int_min} AND
+            SELECT * FROM events WHERE compare_date >= {date_int_min} AND
             compare_date <= {date_int_max} ORDER BY compare_date {order};
             """
         )
-        movies = [dict(row) for row in res.fetchall()]
+        events = [create_elcairo_event(dict(row)) for row in res.fetchall()]
     except sqlite3.OperationalError:
         pass
 
-    return movies
+    return events
 
 
 def cursor_init(ctx: click.Context) -> None:
@@ -44,11 +67,11 @@ def cursor_init(ctx: click.Context) -> None:
 
 
 def printer_init(ctx: click.Context) -> None:
-    """Initialize the MoviePrinter given the click args passed."""
-    ctx.obj["printer"] = MoviePrinter(
+    """Initialize the printer given the click args passed."""
+    ctx.obj["printer"] = ElCairoEventsPrinter(
         name=ctx.obj["name"],
         date=ctx.obj["date"],
-        images=ctx.obj["images"],
+        image=ctx.obj["image"],
         image_url=ctx.obj["image_url"],
         synopsis=ctx.obj["synopsis"],
         extra_info=ctx.obj["extra_info"],
