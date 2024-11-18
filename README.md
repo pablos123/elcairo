@@ -9,7 +9,7 @@ La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 ### Install
 
 ```
-pipx install git+https://github.com/pablos123/elcairo.git && elcairo database populate
+pipx install --force git+https://github.com/pablos123/elcairo.git && elcairo database populate
 ```
 
 > Requires Python >=3.10.
