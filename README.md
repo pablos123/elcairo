@@ -4,8 +4,7 @@ CLI para ver las funciones del cine El Cairo de Rosario.
 La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 
 ## Quickstart
-### Install
-
+### Install using [`pipx`](https://github.com/pypa/pipx)
 ```
 pipx install git+https://github.com/pablos123/elcairo.git && elcairo database populate
 ```
@@ -39,11 +38,12 @@ elcairo shows week
 ![2024-11-18_03-44](https://github.com/user-attachments/assets/2be5e3f0-b102-4892-936d-49de6b75accf)
 
 ## Others
-Upgrade
+### Upgrade
 ```
 pipx upgrade elcairo
 ```
-Remove
+
+### Uninstall
 ```
 pipx uninstall elcairo
 ```
