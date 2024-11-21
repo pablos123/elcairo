@@ -8,47 +8,36 @@ import arrow
 import click
 import ics
 import requests
+from halo import Halo
 
 from elcairo.api.elcairo import ElCairo, ElCairoEvent
 
 
 def download_image(url: str, uid: str, script_dir: Path) -> str:
     """Download an image and returns the path to the file."""
-    file_path: Path | None = None
+    file_path: Path = script_dir / "images" / f"{uid}.jpeg"
+    if file_path.exists():
+        return str(file_path)
 
     try:
         response: requests.Response = requests.get(url, stream=True, timeout=3)
         response.raise_for_status()
-        file_path = script_dir / "images" / f"{uid}.jpeg"
         with Path(file_path).open("wb") as image_file:
             shutil.copyfileobj(response.raw, image_file)
-    except (
-        requests.exceptions.HTTPError,
-        requests.exceptions.Timeout,
-        requests.exceptions.TooManyRedirects,
-        requests.exceptions.RequestException,
-        OSError,
-    ):
-        pass
+    except Exception:
+        return ""
 
-    return str(file_path) if file_path is not None else ""
+    return str(file_path)
 
 
 @click.group()
 @click.option(
     "-s", "--silent/--no-silent", help="Don't print anything.", show_default=True
 )
-@click.option(
-    "-f",
-    "--force/--no-force",
-    help="Force operations. Don't prompt in clean command.",
-    show_default=True,
-)
 @click.pass_context
-def database(ctx: click.Context, silent: bool, force: bool) -> None:
+def database(ctx: click.Context, silent: bool) -> None:
     """Database operations."""
     ctx.obj["silent"] = silent
-    ctx.obj["force"] = force
 
 
 @database.command()
@@ -80,8 +69,15 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
             click.echo("The database is being populated!")
         raise click.exceptions.Exit(1)
 
-    # Lock database operations
+    spinner: Halo = Halo()
+    if not silent:
+        spinner.start("Locking database operations")
+
     lock_file.touch()
+
+    if not silent:
+        spinner.succeed()
+        spinner.start("Removing old database")
 
     image_dir: Path = script_dir / "images"
     image_dir.mkdir(exist_ok=True)
@@ -89,9 +85,16 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     database_file: Path = script_dir / "elcairo.db"
     database_file.unlink(missing_ok=True)
 
-    connection = sqlite3.connect(database_file)
+    if not silent:
+        spinner.succeed()
+        spinner.start(f"Connecting to the new database ({database_file})")
 
+    connection = sqlite3.connect(database_file)
     cursor = connection.cursor()
+
+    if not silent:
+        spinner.succeed()
+        spinner.start("Creating table")
 
     create_query = """
     CREATE TABLE IF NOT EXISTS events (
@@ -112,23 +115,18 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         image_url TEXT NOT NULL,
         url TEXT NOT NULL
     );"""
-
-    if not silent:
-        click.echo(f"Using database {database_file}")
-        click.echo("Creating the table...")
-
     cursor.execute(create_query)
 
-    elcairo: ElCairo = ElCairo()
-
     if not silent:
-        click.echo("Fetching data...")
+        spinner.succeed()
+        spinner.start("Fetching data")
 
+    elcairo: ElCairo = ElCairo()
     events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_events_json()
 
     if not silent:
-        click.echo(f"Fetched {events_dict.__len__()} events...")
-        click.echo("Creating events...")
+        spinner.succeed(f"Fetching data - Fetched: {events_dict.__len__()} events")
+        spinner.start("Creating events")
 
     data_insert: list = []
     for event_uid, elcairo_event in events_dict.items():
@@ -152,7 +150,8 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         data_insert.append(event)
 
     if not silent:
-        click.echo("Populating the table...")
+        spinner.succeed()
+        spinner.start("Populating the table")
 
     cursor.executemany(
         """
@@ -176,22 +175,31 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
         data_insert,
     )
-
     connection.commit()
 
-    # Unlock database operations
+    if not silent:
+        spinner.succeed()
+        spinner.start("Unlocking database operations")
+
     lock_file.unlink()
+
+    if not silent:
+        spinner.succeed()
+        spinner.stop()
+        click.echo("Done!")
 
 
 @database.command()
+@click.option(
+    "-f",
+    "--force/--no-force",
+    help="Force operations. Don't prompt for confirmation.",
+    show_default=True,
+)
 @click.pass_context
-def clean(ctx: click.Context) -> None:
+def clean(ctx: click.Context, force: bool) -> None:
     """Clean the database."""
     silent: bool = ctx.obj["silent"]
-    force: bool = ctx.obj["force"]
-
-    if not silent:
-        click.echo("Cleaning database...")
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
@@ -200,10 +208,16 @@ def clean(ctx: click.Context) -> None:
             "It seems that the database is being populated. Continue?", abort=True
         )
 
+    spinner: Halo = Halo()
+    if not silent:
+        spinner.start("Cleaning database")
+
     database_file: Path = script_dir / "elcairo.db"
 
     lock_file.unlink(missing_ok=True)
     database_file.unlink(missing_ok=True)
 
     if not silent:
-        click.echo("Database cleaned!")
+        spinner.succeed()
+        spinner.stop()
+        click.echo("Done!")

@@ -1,27 +1,23 @@
 # elcairo
-
 CLI para ver las funciones del cine El Cairo de Rosario.
 
 La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 
 ## Quickstart
-
 ### Install
 
 ```
-pipx install --force git+https://github.com/pablos123/elcairo.git && elcairo database populate
+pipx install git+https://github.com/pablos123/elcairo.git && elcairo database populate
 ```
 
 > Requires Python >=3.10.
 
 ### Run
-
 ```
 elcairo --help
 ```
 
 ## Screenshots
-
 ```
 elcairo shows --image --url --image-url --separator upcoming
 ```
@@ -42,3 +38,12 @@ elcairo shows week
 ```
 ![2024-11-18_03-44](https://github.com/user-attachments/assets/2be5e3f0-b102-4892-936d-49de6b75accf)
 
+## Others
+Upgrade
+```
+pipx upgrade elcairo
+```
+Remove
+```
+pipx uninstall elcairo
+```

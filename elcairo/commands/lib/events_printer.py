@@ -227,7 +227,7 @@ class ElCairoEventsPrinter:
             click.echo(f"{DEFAULT}")
             return
 
-        image_url: str = f"({event.image_url})"
+        image_url: str = f"({click.style(event.image_url, italic=True)})"
         space_for_center: str = f"{' ' * (int((WIDTH - image_url.__len__()) / 2))}"
         click.echo(f"{space_for_center}{image_url}")
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elcairo"
-version = "1.6"
+version = "1.7"
 requires-python = ">=3.10"
 dependencies = [
   "ics",
@@ -13,6 +13,7 @@ dependencies = [
   "click",
   "beautifulsoup4",
   "arrow",
+  "halo",
 ]
 
 description = "Cli program that print movies available for watching in El Cario cinema."
