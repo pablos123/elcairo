@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arrow
 import click
-import ics
+import icalendar
 import requests
 from halo import Halo
 
@@ -59,7 +59,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
             click.echo(f"Reading .ics file {ics_file}...")
         with Path(ics_file).open() as file:
             calendar_text: str = file.read()
-            ics.Calendar(calendar_text)
+            icalendar.Calendar.from_ical(calendar_text)
         raise click.exceptions.Exit(0)
 
     script_dir: Path = Path(__file__).parent.resolve()

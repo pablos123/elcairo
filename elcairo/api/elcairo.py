@@ -1,17 +1,17 @@
 """Cine El Cairo API"""
 
+import datetime
 import re
 import time
-from collections.abc import Container
 from dataclasses import dataclass, field
 from re import Match
 
 import arrow
 import bs4
-import ics
+import icalendar
 import requests
 
-_IMAGE_MIME_RE = re.compile(r"^ATTACH;FMTTYPE=image/(?:jpeg|png|webp)$")
+_IMAGE_FMTTYPE_RE = re.compile(r"^image/(?:jpeg|png|webp)$")
 
 
 @dataclass
@@ -37,11 +37,58 @@ class ElCairoEvent:
     extra_info: ElCairoExtraInfo = field(default_factory=ElCairoExtraInfo)
 
 
+class CalEvent:
+    """Wrapper around an icalendar VEVENT component."""
+
+    def __init__(self, component: icalendar.cal.Component) -> None:
+        self._component = component
+        self.uid: str = str(component.get("UID", ""))
+
+    def __hash__(self) -> int:
+        return hash(self.uid)
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, CalEvent) and self.uid == other.uid
+
+    @property
+    def name(self) -> str | None:
+        val = self._component.get("SUMMARY")
+        return str(val) if val is not None else None
+
+    @property
+    def begin(self) -> arrow.Arrow | None:
+        try:
+            dtstart = self._component.decoded("DTSTART")
+        except KeyError:
+            return None
+        if isinstance(dtstart, datetime.date) and not isinstance(
+            dtstart, datetime.datetime
+        ):
+            dtstart = datetime.datetime(
+                dtstart.year, dtstart.month, dtstart.day, tzinfo=datetime.timezone.utc
+            )
+        return arrow.get(dtstart)
+
+    @property
+    def url(self) -> str | None:
+        val = self._component.get("URL")
+        return str(val) if val is not None else None
+
+    @property
+    def extra(self) -> list:
+        attach = self._component.get("ATTACH")
+        if attach is None:
+            return []
+        if isinstance(attach, list):
+            return attach
+        return [attach]
+
+
 class ElCairo:
     """Get El Cairo's information."""
 
     def ics_events_to_elcairo_events(
-        self, events: set[ics.Event]
+        self, events: set[CalEvent]
     ) -> dict[str, ElCairoEvent]:
         """
         Returns a json of events.
@@ -74,14 +121,14 @@ class ElCairo:
 
         return events_dict
 
-    def get_upcoming_events(self) -> set[ics.Event]:
+    def get_upcoming_events(self) -> set[CalEvent]:
         """Get upcoming events."""
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
         month: int = now.month
 
-        upcoming_events: set[ics.Event] = set()
+        upcoming_events: set[CalEvent] = set()
         current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
@@ -97,9 +144,9 @@ class ElCairo:
                 )
                 continue
 
-            current_upcoming_events: set[ics.Event] = set()
+            current_upcoming_events: set[CalEvent] = set()
             for event in current_events:
-                if event.begin >= now:
+                if event.begin is not None and event.begin >= now:
                     current_upcoming_events.add(event)
 
             upcoming_events.update(current_upcoming_events)
@@ -110,14 +157,14 @@ class ElCairo:
 
         return upcoming_events
 
-    def get_past_events(self) -> set[ics.Event]:
+    def get_past_events(self) -> set[CalEvent]:
         """Get past events."""
         now: arrow.Arrow = arrow.now()
 
         year: int = now.year
         month: int = now.month
 
-        past_events: set[ics.Event] = set()
+        past_events: set[CalEvent] = set()
         current_events, error = self.fetch_events(
             str(year).zfill(4), str(month).zfill(2)
         )
@@ -133,9 +180,9 @@ class ElCairo:
                 )
                 continue
 
-            current_past_events: set[ics.Event] = set()
+            current_past_events: set[CalEvent] = set()
             for event in current_events:
-                if event.begin <= now:
+                if event.begin is not None and event.begin <= now:
                     current_past_events.add(event)
 
             past_events.update(current_past_events)
@@ -146,26 +193,26 @@ class ElCairo:
 
         return past_events
 
-    def get_all_events(self) -> set[ics.Event]:
+    def get_all_events(self) -> set[CalEvent]:
         """Get all events."""
-        all_events: set[ics.Event] = set()
+        all_events: set[CalEvent] = set()
         all_events.update(self.get_past_events())
         all_events.update(self.get_upcoming_events())
         return all_events
 
     def get_upcoming_events_json(self) -> dict[str, ElCairoEvent]:
         """Get upcoming events as json."""
-        upcoming_events: set[ics.Event] = self.get_upcoming_events()
+        upcoming_events: set[CalEvent] = self.get_upcoming_events()
         return self.ics_events_to_elcairo_events(upcoming_events)
 
     def get_past_events_json(self) -> dict[str, ElCairoEvent]:
         """Get past events."""
-        past_events: set[ics.Event] = self.get_past_events()
+        past_events: set[CalEvent] = self.get_past_events()
         return self.ics_events_to_elcairo_events(past_events)
 
     def get_all_events_json(self) -> dict[str, ElCairoEvent]:
         """Get all events."""
-        all_events: set[ics.Event] = self.get_all_events()
+        all_events: set[CalEvent] = self.get_all_events()
         return self.ics_events_to_elcairo_events(all_events)
 
     def get_soup(self, url: str) -> bs4.BeautifulSoup | None:
@@ -243,27 +290,17 @@ class ElCairo:
         return ElCairoExtraInfo(**extra_info_args)
 
     @staticmethod
-    def get_image(extra_info: list[Container]) -> str:
+    def get_image(extra_attachments: list) -> str:
         """Get the image url if the mime type is a valid image mime type."""
-
-        def check_mime(mime: str) -> Match[str] | None:
-            """
-            Check if the extra info of a 'elcairo' type event
-            is a 'file' and if the mime type is correct.
-            The regex is based on the information
-            I saw in some of the El Cairo's .ics
-            """
-            return _IMAGE_MIME_RE.search(mime)
-
-        image_url: str = ""
-        for item in extra_info:
-            parts: list[str] = str(item).split(":", 1)
-            if len(parts) == 2 and check_mime(parts[0]):
-                image_url = parts[1]
-        return image_url
+        for item in extra_attachments:
+            if hasattr(item, "params"):
+                fmttype = str(item.params.get("FMTTYPE", ""))
+                if _IMAGE_FMTTYPE_RE.match(fmttype):
+                    return str(item)
+        return ""
 
     @staticmethod
-    def fetch_events(year: str, month: str) -> tuple[set[ics.Event], bool]:
+    def fetch_events(year: str, month: str) -> tuple[set[CalEvent], bool]:
         """Fetch the ics file of the year-month date."""
         time.sleep(0.5)
 
@@ -281,10 +318,11 @@ class ElCairo:
             return set(), True
 
         error: bool = False
-        events: set[ics.Event] = set()
+        events: set[CalEvent] = set()
         try:
-            events = ics.Calendar(response.text).events
-        except ValueError:
+            cal = icalendar.Calendar.from_ical(response.text)
+            events = {CalEvent(c) for c in cal.walk() if c.name == "VEVENT"}
+        except Exception:
             error = True
 
         return events, error

@@ -4,10 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elcairo"
-version = "1.8"
+version = "1.9"
 requires-python = ">=3.10"
 dependencies = [
-  "ics",
   "icalendar",
   "requests",
   "click",
