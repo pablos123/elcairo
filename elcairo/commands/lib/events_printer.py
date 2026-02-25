@@ -20,12 +20,12 @@ def truncate(string: str, start_len: int = 0):
     """
     first_line_len: int = WIDTH - start_len
 
-    if string.__len__() <= first_line_len:
+    if len(string) <= first_line_len:
         return string.replace("\n", " ").strip()
     out: str = ""
     lines: list[str] = [string[0:first_line_len]]
     lines.extend(
-        [string[i : i + WIDTH] for i in range(first_line_len, string.__len__(), WIDTH)]
+        [string[i : i + WIDTH] for i in range(first_line_len, len(string), WIDTH)]
     )
     for line in lines:
         out += f"{line}\n"
@@ -156,14 +156,14 @@ class ElCairoEventsPrinter:
 
         if name:
             name_str: str = event.name or DEFAULT
-            title_len += name_str.__len__()
+            title_len += len(name_str)
             name_styled: str = click.style(
                 name_str, fg="green", bold=True, underline=True
             )
 
         if date:
             date_str: str = get_nice_date(event.date)
-            title_len += date_str.__len__()
+            title_len += len(date_str)
             date_styled: str = click.style(
                 date_str, fg="blue", bold=True, underline=True
             )
@@ -193,7 +193,7 @@ class ElCairoEventsPrinter:
                 data = DEFAULT
 
             click.echo(
-                f"{click.style(name, fg="yellow")}{truncate(data, name.__len__())}"
+                f"{click.style(name, fg="yellow")}{truncate(data, len(name))}"
             )
 
         click.echo(f"{WIDTH * '-'}")
@@ -228,7 +228,7 @@ class ElCairoEventsPrinter:
             return
 
         image_url: str = f"({click.style(event.image_url, italic=True)})"
-        space_for_center: str = f"{' ' * (int((WIDTH - image_url.__len__()) / 2))}"
+        space_for_center: str = f"{' ' * (int((WIDTH - len(image_url)) / 2))}"
         click.echo(f"{space_for_center}{image_url}")
 
     @staticmethod

@@ -9,6 +9,11 @@ La página web tiene una interfaz muy poco intuitiva y nunca la entiendo.
 pipx install git+https://github.com/pablos123/elcairo.git && elcairo database populate
 ```
 
+### Install using [`uv`](https://github.com/astral-sh/uv)
+```
+uv tool install git+https://github.com/pablos123/elcairo.git && elcairo database populate
+```
+
 > Requires Python >=3.10.
 
 ### Run
@@ -41,9 +46,11 @@ elcairo shows week
 ### Upgrade
 ```
 pipx upgrade elcairo
+uv tool upgrade elcairo
 ```
 
 ### Uninstall
 ```
 pipx uninstall elcairo
+uv tool uninstall elcairo
 ```

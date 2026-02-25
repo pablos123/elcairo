@@ -39,10 +39,9 @@ def query(
     events: list[ElCairoEvent] = []
     try:
         res: sqlite3.Cursor = cursor.execute(
-            f"""
-            SELECT * FROM events WHERE compare_date >= {date_int_min} AND
-            compare_date <= {date_int_max} ORDER BY compare_date {order};
-            """
+            "SELECT * FROM events WHERE compare_date >= ? AND compare_date <= ? ORDER BY compare_date "
+            + order,
+            (date_int_min, date_int_max),
         )
         events = [create_elcairo_event(dict(row)) for row in res.fetchall()]
     except sqlite3.OperationalError:
@@ -61,6 +60,7 @@ def cursor_init(ctx: click.Context) -> None:
         raise click.exceptions.Exit(1)
 
     connection = sqlite3.connect(database_file)
+    ctx.with_resource(connection)
 
     connection.row_factory = sqlite3.Row
     ctx.obj["cursor"] = connection.cursor()
@@ -84,7 +84,7 @@ def next_sunday() -> arrow.Arrow:
     """Arrow object of next sunday."""
     date: arrow.Arrow = arrow.now()
     while date.weekday() != 6:
-        date = date.dehumanize("in a day")
+        date = date.shift(days=1)
     return date.floor("day")
 
 
@@ -92,7 +92,7 @@ def next_saturday() -> arrow.Arrow:
     """Arrow object of the next saturday."""
     date: arrow.Arrow = arrow.now()
     while date.weekday() != 5:
-        date = date.dehumanize("in a day")
+        date = date.shift(days=1)
     return date.floor("day")
 
 

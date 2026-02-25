@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elcairo"
-version = "1.7"
+version = "1.8"
 requires-python = ">=3.10"
 dependencies = [
   "ics",
@@ -16,7 +16,7 @@ dependencies = [
   "halo",
 ]
 
-description = "Cli program that print movies available for watching in El Cario cinema."
+description = "Cli program that print movies available for watching in El Cairo cinema."
 authors = [{ name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" }]
 maintainers = [
   { name = "Pablo Saavedra", email = "pablosaavedra123@gmail.com" },

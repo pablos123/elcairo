@@ -24,7 +24,7 @@ def download_image(url: str, uid: str, script_dir: Path) -> str:
         response.raise_for_status()
         with Path(file_path).open("wb") as image_file:
             shutil.copyfileobj(response.raw, image_file)
-    except Exception:
+    except (requests.exceptions.RequestException, OSError):
         return ""
 
     return str(file_path)
@@ -57,7 +57,7 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     if ics_file:
         if not silent:
             click.echo(f"Reading .ics file {ics_file}...")
-        with Path(str(ics_file)).open() as file:
+        with Path(ics_file).open() as file:
             calendar_text: str = file.read()
             ics.Calendar(calendar_text)
         raise click.exceptions.Exit(0)
@@ -125,10 +125,10 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     events_dict: dict[str, ElCairoEvent] = elcairo.get_upcoming_events_json()
 
     if not silent:
-        spinner.succeed(f"Fetching data - Fetched: {events_dict.__len__()} events")
+        spinner.succeed(f"Fetching data - Fetched: {len(events_dict)} events")
         spinner.start("Creating events")
 
-    data_insert: list = []
+    data_insert: list[tuple] = []
     for event_uid, elcairo_event in events_dict.items():
         event = (
             elcairo_event.name,

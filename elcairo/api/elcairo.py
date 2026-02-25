@@ -11,6 +11,8 @@ import bs4
 import ics
 import requests
 
+_IMAGE_MIME_RE = re.compile(r"^ATTACH;FMTTYPE=image/(?:jpeg|png|webp)$")
+
 
 @dataclass
 class ElCairoExtraInfo:
@@ -208,7 +210,7 @@ class ElCairo:
         data_elem: bs4.Tag | None = soup.select_one(".ficha-tecnica-online")
         if data_elem is not None:
             data_lines: list[str] = data_elem.text.split("\n")
-            if data_lines.__len__() == 0:
+            if len(data_lines) == 0:
                 return ElCairoExtraInfo()
 
             field_names: dict = {
@@ -251,13 +253,13 @@ class ElCairo:
             The regex is based on the information
             I saw in some of the El Cairo's .ics
             """
-            return re.search("^ATTACH;FMTTYPE=image/(:?jpeg|png|webp)$", mime)
+            return _IMAGE_MIME_RE.search(mime)
 
         image_url: str = ""
         for item in extra_info:
-            splitted_item_str: list[str] = str(item).split(":")
-            if check_mime(splitted_item_str[0]):
-                image_url = splitted_item_str[1] + ":" + splitted_item_str[2]
+            parts: list[str] = str(item).split(":", 1)
+            if len(parts) == 2 and check_mime(parts[0]):
+                image_url = parts[1]
         return image_url
 
     @staticmethod
@@ -275,8 +277,8 @@ class ElCairo:
             requests.exceptions.Timeout,
             requests.exceptions.TooManyRedirects,
             requests.exceptions.RequestException,
-        ) as get_error:
-            raise get_error
+        ):
+            return set(), True
 
         error: bool = False
         events: set[ics.Event] = set()

@@ -106,7 +106,7 @@ def today(ctx: click.Context) -> None:
 @click.pass_context
 def tomorrow(ctx: click.Context) -> None:
     """Tomorrow's events."""
-    tomorrow: arrow.Arrow = arrow.now().dehumanize("in a day")
+    tomorrow: arrow.Arrow = arrow.now().shift(days=1)
     events: list[ElCairoEvent] = shows_functions.query(
         cursor=ctx.obj["cursor"],
         date_int_min=shows_functions.day_start(tomorrow),
