@@ -1,12 +1,8 @@
 """Print events"""
 
-import fcntl
 import os
 import shutil
-import struct
 import subprocess
-import tempfile
-import termios
 
 import arrow
 import click
@@ -57,27 +53,12 @@ def _detect_renderer(forced: str | None) -> str | None:
 
 def _kitty_render(image_path: str) -> None:
     """Render image inline with kitty, pre-scaled to WIDTH columns."""
-    try:
-        buf = fcntl.ioctl(1, termios.TIOCGWINSZ, b"\x00" * 8)
-        _, term_cols, px_width, _ = struct.unpack("HHHH", buf)
-        px_per_col = px_width // term_cols if term_cols and px_width else 10
-    except Exception:
-        px_per_col = 10
-
-    max_px = WIDTH * px_per_col
-    try:
-        img = Image.open(image_path)
-        if img.width > max_px:
-            ratio = max_px / img.width
-            img = img.resize((max_px, int(img.height * ratio)), Image.LANCZOS)
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-                img.save(tmp.name)
-                subprocess.run(["kitten", "icat", tmp.name])
-                os.unlink(tmp.name)
-            return
-    except Exception:
-        pass
-    subprocess.run(["kitten", "icat", image_path])
+    convert = subprocess.Popen(
+        ["convert", image_path, "-resize", f"{WIDTH * 10}x", "jpg:-"],
+        stdout=subprocess.PIPE,
+    )
+    subprocess.run(["kitten", "icat", "-"], stdin=convert.stdout)
+    convert.wait()
 
 
 def _run_renderer(renderer: str, image_path: str) -> None:
