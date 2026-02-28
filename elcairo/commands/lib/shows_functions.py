@@ -77,6 +77,7 @@ def printer_init(ctx: click.Context) -> None:
         extra_info=ctx.obj["extra_info"],
         url=ctx.obj["url"],
         separator=ctx.obj["separator"],
+        image_renderer=ctx.obj["image_renderer"],
     )
 
 

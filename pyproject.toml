@@ -13,6 +13,7 @@ dependencies = [
   "beautifulsoup4",
   "arrow",
   "halo",
+  "Pillow",
 ]
 
 description = "Cli program that print movies available for watching in El Cairo cinema."

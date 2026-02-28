@@ -41,7 +41,7 @@ from elcairo.api.elcairo import ElCairoEvent
 )
 @click.option("-u", "--url/--no-url", help="Show url.", show_default=True)
 @click.option(
-    "-s",
+    "-p",
     "--separator/--no-separator",
     help="Print separator.",
     show_default=True,
@@ -51,6 +51,16 @@ from elcairo.api.elcairo import ElCairoEvent
     "--reverse/--no-reverse",
     help="Print in reverse order.",
     show_default=True,
+)
+@click.option(
+    "-R",
+    "--image-renderer",
+    type=click.Choice(
+        ["kitty", "wezterm", "iterm2", "chafa", "timg", "viu", "catimg", "img2txt", "pixterm", "jp2a", "builtin"],
+        case_sensitive=False,
+    ),
+    default=None,
+    help="Force a specific image renderer. [default: auto]",
 )
 @click.pass_context
 def shows(
@@ -64,6 +74,7 @@ def shows(
     url: bool,
     separator: bool,
     reverse: bool,
+    image_renderer: str | None,
 ):
     """Events printer."""
 
@@ -84,6 +95,7 @@ def shows(
     ctx.obj["order"] = "DESC"
     if reverse:
         ctx.obj["order"] = "ASC"
+    ctx.obj["image_renderer"] = image_renderer
     shows_functions.cursor_init(ctx)
     shows_functions.printer_init(ctx)
 

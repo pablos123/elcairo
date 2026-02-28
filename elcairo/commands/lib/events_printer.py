@@ -1,16 +1,96 @@
 """Print events"""
 
 import os
+import shutil
 import subprocess
 
 import arrow
 import click
 from arrow import Arrow
+from PIL import Image
 
 from elcairo.api.elcairo import ElCairoEvent
 
 DEFAULT = "[Nothing to show...]"
 WIDTH = 120
+
+RENDERERS: dict[str, list[str]] = {
+    "kitty": [
+        "kitten",
+        "icat",
+        "--scale-up",
+        "--use-window-size",
+        "1,1,{width},500",
+        "{path}",
+    ],
+    "wezterm": ["wezterm", "imgcat", "--width", "{width}", "{path}"],
+    "iterm2": ["imgcat", "{path}"],
+    "chafa": ["chafa", "--size={width}x", "{path}"],
+    "timg": ["timg", "-g{width}x", "{path}"],
+    "viu": ["viu", "-w", "{width}", "{path}"],
+    "catimg": ["catimg", "-w", "{width}", "{path}"],
+    "img2txt": ["img2txt", "--width={width}", "{path}"],
+    "pixterm": ["pixterm", "{path}"],
+    "jp2a": ["jp2a", "--width={width}", "{path}"],
+}
+
+
+def _detect_renderer(forced: str | None) -> str | None:
+    """Return the renderer to use: forced override, then env-based, then PATH."""
+    if forced is not None:
+        return forced
+
+    if os.getenv("KITTY_WINDOW_ID") or os.getenv("TERM") == "xterm-kitty":
+        return "kitty"
+
+    term_program = os.getenv("TERM_PROGRAM", "")
+    if term_program == "WezTerm":
+        return "wezterm"
+    if term_program == "iTerm.app":
+        return "iterm2"
+    if term_program == "ghostty" or os.getenv("TERM") == "xterm-ghostty":
+        return "kitty"
+
+    for name in ("chafa", "timg", "viu", "catimg", "img2txt", "pixterm", "jp2a"):
+        if shutil.which(name):
+            return name
+
+    return None
+
+
+def _run_renderer(renderer: str, image_path: str) -> None:
+    """Build and execute the renderer command."""
+    template = RENDERERS[renderer]
+    cmd = [part.format(path=image_path, width=str(WIDTH)) for part in template]
+    subprocess.run(cmd)
+
+
+def _builtin_ascii_render(image_path: str) -> None:
+    """Render an image as ASCII art using Pillow. Always available as fallback."""
+
+    # ASCII density ramp: darkest → lightest
+    RAMP = " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSUZ8g4d9bKhE0X&WB@M"
+
+    try:
+        img = Image.open(image_path).convert("RGB")
+    except Exception:
+        click.echo(f"Could not open image: {image_path}")
+        return
+
+    # ASCII chars are roughly twice as tall as wide, so halve the row count
+    char_width = WIDTH
+    aspect = img.height / img.width
+    char_height = max(1, int(char_width * aspect * 0.45))
+
+    img = img.resize((char_width, char_height))
+    gray = img.convert("L")
+
+    for y in range(char_height):
+        row = ""
+        for x in range(char_width):
+            pixel = gray.getpixel((x, y))
+            row += RAMP[int(pixel / 255 * (len(RAMP) - 1))]
+        click.echo(row)
 
 
 def truncate(string: str, start_len: int = 0):
@@ -46,6 +126,7 @@ class ElCairoEventsPrinter:
         extra_info: bool,
         url: bool,
         separator: bool,
+        image_renderer: str | None = None,
     ):
         self.name = name
         self.date = date
@@ -55,6 +136,7 @@ class ElCairoEventsPrinter:
         self.extra_info = extra_info
         self.url = url
         self.separator = separator
+        self.image_renderer = image_renderer
 
     def echo_list(self, events: list[ElCairoEvent] | None = None) -> None:
         """Print a list of events."""
@@ -192,9 +274,7 @@ class ElCairoEventsPrinter:
             if not data:
                 data = DEFAULT
 
-            click.echo(
-                f"{click.style(name, fg="yellow")}{truncate(data, len(name))}"
-            )
+            click.echo(f"{click.style(name, fg='yellow')}{truncate(data, len(name))}")
 
         click.echo(f"{WIDTH * '-'}")
 
@@ -209,15 +289,17 @@ class ElCairoEventsPrinter:
 
         click.echo(f"{WIDTH * '-'}")
 
-    @staticmethod
-    def echo_image(event: ElCairoEvent) -> None:
-        """Echo an image. Only works for wezterm terminal emulator."""
+    def echo_image(self, event: ElCairoEvent) -> None:
+        """Echo an image using the best available renderer."""
 
-        image: str = event.image_path or DEFAULT
-        if os.getenv("TERM_PROGRAM") == "WezTerm":
-            subprocess.run(["wezterm", "imgcat", "--width", str(WIDTH), f"{image}"])
-        else:
-            click.echo("Images are only supported inside wezterm terminal emulator.")
+        image_path: str = event.image_path or DEFAULT
+        renderer = _detect_renderer(self.image_renderer)
+
+        if renderer is None or renderer == "builtin":
+            _builtin_ascii_render(image_path)
+            return
+
+        _run_renderer(renderer, image_path)
 
     @staticmethod
     def echo_image_url(event: ElCairoEvent) -> None:
@@ -237,5 +319,5 @@ class ElCairoEventsPrinter:
 
         url: str = event.url or DEFAULT
         click.echo(
-            f"{click.style("URL:", fg="yellow")} {click.style(url, italic=True)}"
+            f"{click.style('URL:', fg='yellow')} {click.style(url, italic=True)}"
         )
