@@ -3,6 +3,7 @@
 import os
 import shutil
 import subprocess
+from pathlib import Path
 
 import arrow
 import click
@@ -15,7 +16,6 @@ DEFAULT = "[Nothing to show...]"
 WIDTH = 120
 
 RENDERERS: dict[str, list[str]] = {
-    "kitty": ["kitten", "icat", "{path}"],
     "wezterm": ["wezterm", "imgcat", "--width", "{width}", "{path}"],
     "iterm2": ["imgcat", "{path}"],
     "chafa": ["chafa", "--size={width}x", "{path}"],
@@ -53,12 +53,14 @@ def _detect_renderer(forced: str | None) -> str | None:
 
 def _kitty_render(image_path: str) -> None:
     """Render image inline with kitty, pre-scaled to WIDTH columns."""
+    temporal_img = Path("/tmp/elcairo_tmp_kitty.png")
+
     convert = subprocess.Popen(
-        ["convert", image_path, "-resize", f"{WIDTH * 10}x", "jpg:-"],
-        stdout=subprocess.PIPE,
+        ["convert", image_path, "-resize", f"{WIDTH * 10}x", str(temporal_img)]
     )
-    subprocess.run(["kitten", "icat", "-"], stdin=convert.stdout)
     convert.wait()
+
+    subprocess.run(["kitty", "+kitten", "icat", str(temporal_img)])
 
 
 def _run_renderer(renderer: str, image_path: str) -> None:
@@ -66,6 +68,7 @@ def _run_renderer(renderer: str, image_path: str) -> None:
     if renderer == "kitty":
         _kitty_render(image_path)
         return
+
     template = RENDERERS[renderer]
     cmd = [part.format(path=image_path, width=str(WIDTH)) for part in template]
     subprocess.run(cmd)
