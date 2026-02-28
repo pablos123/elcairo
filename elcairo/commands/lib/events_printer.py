@@ -15,14 +15,7 @@ DEFAULT = "[Nothing to show...]"
 WIDTH = 120
 
 RENDERERS: dict[str, list[str]] = {
-    "kitty": [
-        "kitten",
-        "icat",
-        "--scale-up",
-        "--use-window-size",
-        "1,1,{width},500",
-        "{path}",
-    ],
+    "kitty": ["kitten", "icat", "--scale-up", "--place", "{width}x999@0x0", "{path}"],
     "wezterm": ["wezterm", "imgcat", "--width", "{width}", "{path}"],
     "iterm2": ["imgcat", "{path}"],
     "chafa": ["chafa", "--size={width}x", "{path}"],

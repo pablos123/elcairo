@@ -50,7 +50,7 @@ def query(
     return events
 
 
-def cursor_init(ctx: click.Context) -> None:
+def cursor_init(obj: dict) -> None:
     """Initialize the cursor and the printer."""
     script_dir: Path = Path(__file__).parent.resolve()
     database_file: Path = script_dir / ".." / "elcairo.db"
@@ -60,24 +60,24 @@ def cursor_init(ctx: click.Context) -> None:
         raise click.exceptions.Exit(1)
 
     connection = sqlite3.connect(database_file)
-    ctx.with_resource(connection)
+    click.get_current_context().with_resource(connection)
 
     connection.row_factory = sqlite3.Row
-    ctx.obj["cursor"] = connection.cursor()
+    obj["cursor"] = connection.cursor()
 
 
-def printer_init(ctx: click.Context) -> None:
+def printer_init(obj: dict) -> None:
     """Initialize the printer given the click args passed."""
-    ctx.obj["printer"] = ElCairoEventsPrinter(
-        name=ctx.obj["name"],
-        date=ctx.obj["date"],
-        image=ctx.obj["image"],
-        image_url=ctx.obj["image_url"],
-        synopsis=ctx.obj["synopsis"],
-        extra_info=ctx.obj["extra_info"],
-        url=ctx.obj["url"],
-        separator=ctx.obj["separator"],
-        image_renderer=ctx.obj["image_renderer"],
+    obj["printer"] = ElCairoEventsPrinter(
+        name=obj["name"],
+        date=obj["date"],
+        image=obj["image"],
+        image_url=obj["image_url"],
+        synopsis=obj["synopsis"],
+        extra_info=obj["extra_info"],
+        url=obj["url"],
+        separator=obj["separator"],
+        image_renderer=obj["image_renderer"],
     )
 
 

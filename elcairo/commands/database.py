@@ -34,10 +34,10 @@ def download_image(url: str, uid: str, script_dir: Path) -> str:
 @click.option(
     "-s", "--silent/--no-silent", help="Don't print anything.", show_default=True
 )
-@click.pass_context
-def database(ctx: click.Context, silent: bool) -> None:
+@click.pass_obj
+def database(obj: dict, silent: bool) -> None:
     """Database operations."""
-    ctx.obj["silent"] = silent
+    obj["silent"] = silent
 
 
 @database.command()
@@ -49,10 +49,10 @@ def database(ctx: click.Context, silent: bool) -> None:
     type=click.Path(exists=True),
     required=False,
 )
-@click.pass_context
-def populate(ctx: click.Context, ics_file: click.Path) -> None:
+@click.pass_obj
+def populate(obj: dict, ics_file: click.Path) -> None:
     """Populate the database."""
-    silent: bool = ctx.obj["silent"]
+    silent: bool = obj["silent"]
 
     if ics_file:
         if not silent:
@@ -196,10 +196,10 @@ def populate(ctx: click.Context, ics_file: click.Path) -> None:
     help="Force operations. Don't prompt for confirmation.",
     show_default=True,
 )
-@click.pass_context
-def clean(ctx: click.Context, force: bool) -> None:
+@click.pass_obj
+def clean(obj: dict, force: bool) -> None:
     """Clean the database."""
-    silent: bool = ctx.obj["silent"]
+    silent: bool = obj["silent"]
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"

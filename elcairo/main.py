@@ -19,8 +19,7 @@ def version() -> str:
 
 @click.group()
 @click.version_option(message=version())
-@click.pass_context
-def elcairo(ctx: click.Context):
+def elcairo():
     """elcairo command group."""
 
 

@@ -62,9 +62,9 @@ from elcairo.api.elcairo import ElCairoEvent
     default=None,
     help="Force a specific image renderer. [default: auto]",
 )
-@click.pass_context
+@click.pass_obj
 def shows(
-    ctx: click.Context,
+    obj: dict,
     name: bool,
     date: bool,
     image: bool,
@@ -84,75 +84,75 @@ def shows(
         click.echo("The database is being populated!")
         raise click.exceptions.Exit(1)
 
-    ctx.obj["name"] = name
-    ctx.obj["date"] = date
-    ctx.obj["image"] = image
-    ctx.obj["image_url"] = image_url
-    ctx.obj["synopsis"] = synopsis
-    ctx.obj["extra_info"] = extra_info
-    ctx.obj["url"] = url
-    ctx.obj["separator"] = separator
-    ctx.obj["order"] = "DESC"
+    obj["name"] = name
+    obj["date"] = date
+    obj["image"] = image
+    obj["image_url"] = image_url
+    obj["synopsis"] = synopsis
+    obj["extra_info"] = extra_info
+    obj["url"] = url
+    obj["separator"] = separator
+    obj["order"] = "DESC"
     if reverse:
-        ctx.obj["order"] = "ASC"
-    ctx.obj["image_renderer"] = image_renderer
-    shows_functions.cursor_init(ctx)
-    shows_functions.printer_init(ctx)
+        obj["order"] = "ASC"
+    obj["image_renderer"] = image_renderer
+    shows_functions.cursor_init(obj)
+    shows_functions.printer_init(obj)
 
 
 @shows.command()
-@click.pass_context
-def today(ctx: click.Context) -> None:
+@click.pass_obj
+def today(obj: dict) -> None:
     """Today's events."""
     now: arrow.Arrow = arrow.now()
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(now),
         date_int_max=shows_functions.day_end(now),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
-@click.pass_context
-def tomorrow(ctx: click.Context) -> None:
+@click.pass_obj
+def tomorrow(obj: dict) -> None:
     """Tomorrow's events."""
     tomorrow: arrow.Arrow = arrow.now().shift(days=1)
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(tomorrow),
         date_int_max=shows_functions.day_end(tomorrow),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
-@click.pass_context
-def week(ctx: click.Context) -> None:
+@click.pass_obj
+def week(obj: dict) -> None:
     """Events until next sunday."""
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=shows_functions.day_end(shows_functions.next_sunday()),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
-@click.pass_context
-def weekend(ctx: click.Context) -> None:
+@click.pass_obj
+def weekend(obj: dict) -> None:
     """This weekend's events."""
 
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(shows_functions.next_saturday()),
         date_int_max=shows_functions.day_end(shows_functions.next_sunday()),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
@@ -163,20 +163,20 @@ def weekend(ctx: click.Context) -> None:
     type=click.DateTime(formats=["%d-%m-%Y"]),
     required=True,
 )
-@click.pass_context
-def day(ctx: click.Context, date: datetime.datetime) -> None:
+@click.pass_obj
+def day(obj: dict, date: datetime.datetime) -> None:
     """Events of a given date."""
     year: str = str(date.year).zfill(4)
     month: str = str(date.month).zfill(2)
     day_date: str = str(date.day).zfill(2)
     date_arrow: arrow.Arrow = arrow.get(f"{year}-{month}-{day_date}")
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(date_arrow),
         date_int_max=shows_functions.day_end(date_arrow),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
@@ -187,8 +187,8 @@ def day(ctx: click.Context, date: datetime.datetime) -> None:
     type=click.DateTime(formats=["%d-%m-%Y"]),
     required=True,
 )
-@click.pass_context
-def until(ctx: click.Context, date: datetime.datetime) -> None:
+@click.pass_obj
+def until(obj: dict, date: datetime.datetime) -> None:
     """Events until a given date."""
 
     year: str = str(date.year).zfill(4)
@@ -196,22 +196,22 @@ def until(ctx: click.Context, date: datetime.datetime) -> None:
     day_date: str = str(date.day).zfill(2)
     date_arrow: arrow.Arrow = arrow.get(f"{year}-{month}-{day_date}")
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=shows_functions.day_end(date_arrow),
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
 
 
 @shows.command()
-@click.pass_context
-def upcoming(ctx: click.Context) -> None:
+@click.pass_obj
+def upcoming(obj: dict) -> None:
     """Upcoming events."""
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=ctx.obj["cursor"],
+        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=sys.maxsize,
-        order=ctx.obj["order"],
+        order=obj["order"],
     )
-    ctx.obj["printer"].echo_list(events)
+    obj["printer"].echo_list(events)
