@@ -15,10 +15,10 @@ DEFAULT = "[Nothing to show...]"
 WIDTH = 120
 
 RENDERERS: dict[str, str] = {
-    "wezterm": "wezterm imgcat --width '{width}' '{path}'",
-    "chafa": "chafa --size='{width}x' '{path}'",
-    "catimg": "catimg -w '{width}' '{path}'",
-    "jp2a": "jp2a --width='{width}' '{path}'",
+    "wezterm": "wezterm imgcat --width {width}",
+    "chafa": "chafa --size={width}x",
+    "catimg": "catimg -w {width}",
+    "jp2a": "jp2a --width={width}",
 }
 
 
@@ -274,7 +274,9 @@ class ElCairoEventsPrinter:
 
         width = WIDTH * 2 if renderer == "catimg" else WIDTH
 
-        subprocess.run(RENDERERS[renderer].format(width=width, path=image_path).split())
+        cmd_list = RENDERERS[renderer].format(width=width).split()
+        cmd_list.append(image_path)
+        subprocess.run(cmd_list)
 
     @staticmethod
     def echo_image_url(event: ElCairoEvent) -> None:
