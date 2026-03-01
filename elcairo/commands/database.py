@@ -1,7 +1,6 @@
 """Database command group."""
 
 import shutil
-import sqlite3
 from pathlib import Path
 
 import arrow
@@ -11,6 +10,7 @@ import requests
 from halo import Halo
 
 from elcairo.api.elcairo import ElCairo, ElCairoEvent
+from elcairo.models import EventModel, db
 
 
 def download_image(url: str, uid: str, script_dir: Path) -> str:
@@ -89,33 +89,14 @@ def populate(obj: dict, ics_file: click.Path) -> None:
         spinner.succeed()
         spinner.start(f"Connecting to the new database ({database_file})")
 
-    connection = sqlite3.connect(database_file)
-    cursor = connection.cursor()
+    db.init(database_file)
+    db.connect()
 
     if not silent:
         spinner.succeed()
         spinner.start("Creating table")
 
-    create_query = """
-    CREATE TABLE IF NOT EXISTS events (
-        event_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        date TEXT NOT NULL,
-        compare_date INT NOT NULL,
-        synopsis TEXT NOT NULL,
-        direction TEXT NOT NULL,
-        cast TEXT NOT NULL,
-        genre TEXT NOT NULL,
-        duration TEXT NOT NULL,
-        origin TEXT NOT NULL,
-        year TEXT NOT NULL,
-        age TEXT NOT NULL,
-        cost TEXT NOT NULL,
-        image_path TEXT NOT NULL,
-        image_url TEXT NOT NULL,
-        url TEXT NOT NULL
-    );"""
-    cursor.execute(create_query)
+    db.create_tables([EventModel])
 
     if not silent:
         spinner.succeed()
@@ -128,54 +109,32 @@ def populate(obj: dict, ics_file: click.Path) -> None:
         spinner.succeed(f"Fetching data - Fetched: {len(events_dict)} events")
         spinner.start("Creating events")
 
-    data_insert: list[tuple] = []
+    data_insert: list[dict] = []
     for event_uid, elcairo_event in events_dict.items():
-        event = (
-            elcairo_event.name,
-            str(arrow.get(elcairo_event.date)),
-            int(arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")),
-            elcairo_event.synopsis,
-            elcairo_event.extra_info.direction,
-            elcairo_event.extra_info.cast,
-            elcairo_event.extra_info.genre,
-            elcairo_event.extra_info.duration,
-            elcairo_event.extra_info.origin,
-            elcairo_event.extra_info.year,
-            elcairo_event.extra_info.age,
-            elcairo_event.cost,
-            download_image(elcairo_event.image_url, event_uid, script_dir),
-            elcairo_event.image_url,
-            elcairo_event.url,
-        )
-        data_insert.append(event)
+        data_insert.append({
+            "name": elcairo_event.name,
+            "date": str(arrow.get(elcairo_event.date)),
+            "compare_date": int(arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")),
+            "synopsis": elcairo_event.synopsis,
+            "direction": elcairo_event.extra_info.direction,
+            "cast": elcairo_event.extra_info.cast,
+            "genre": elcairo_event.extra_info.genre,
+            "duration": elcairo_event.extra_info.duration,
+            "origin": elcairo_event.extra_info.origin,
+            "year": elcairo_event.extra_info.year,
+            "age": elcairo_event.extra_info.age,
+            "cost": elcairo_event.cost,
+            "image_path": download_image(elcairo_event.image_url, event_uid, script_dir),
+            "image_url": elcairo_event.image_url,
+            "url": elcairo_event.url,
+        })
 
     if not silent:
         spinner.succeed()
         spinner.start("Populating the table")
 
-    cursor.executemany(
-        """
-        INSERT INTO events (
-            'name',
-            'date',
-            'compare_date',
-            'synopsis',
-            'direction',
-            'cast',
-            'genre',
-            'duration',
-            'origin',
-            'year',
-            'age',
-            'cost',
-            'image_path',
-            'image_url',
-            'url'
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
-        data_insert,
-    )
-    connection.commit()
+    EventModel.insert_many(data_insert).execute()
+    db.close()
 
     if not silent:
         spinner.succeed()

@@ -96,7 +96,7 @@ def shows(
     if reverse:
         obj["order"] = "ASC"
     obj["image_renderer"] = image_renderer
-    shows_functions.cursor_init(obj)
+    shows_functions.db_init(obj)
     shows_functions.printer_init(obj)
 
 
@@ -106,7 +106,6 @@ def today(obj: dict) -> None:
     """Today's events."""
     now: arrow.Arrow = arrow.now()
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(now),
         date_int_max=shows_functions.day_end(now),
         order=obj["order"],
@@ -120,7 +119,6 @@ def tomorrow(obj: dict) -> None:
     """Tomorrow's events."""
     tomorrow: arrow.Arrow = arrow.now().shift(days=1)
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(tomorrow),
         date_int_max=shows_functions.day_end(tomorrow),
         order=obj["order"],
@@ -133,7 +131,6 @@ def tomorrow(obj: dict) -> None:
 def week(obj: dict) -> None:
     """Events until next sunday."""
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=shows_functions.day_end(shows_functions.next_sunday()),
         order=obj["order"],
@@ -147,7 +144,6 @@ def weekend(obj: dict) -> None:
     """This weekend's events."""
 
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(shows_functions.next_saturday()),
         date_int_max=shows_functions.day_end(shows_functions.next_sunday()),
         order=obj["order"],
@@ -171,7 +167,6 @@ def day(obj: dict, date: datetime.datetime) -> None:
     day_date: str = str(date.day).zfill(2)
     date_arrow: arrow.Arrow = arrow.get(f"{year}-{month}-{day_date}")
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(date_arrow),
         date_int_max=shows_functions.day_end(date_arrow),
         order=obj["order"],
@@ -196,7 +191,6 @@ def until(obj: dict, date: datetime.datetime) -> None:
     day_date: str = str(date.day).zfill(2)
     date_arrow: arrow.Arrow = arrow.get(f"{year}-{month}-{day_date}")
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=shows_functions.day_end(date_arrow),
         order=obj["order"],
@@ -209,7 +203,6 @@ def until(obj: dict, date: datetime.datetime) -> None:
 def upcoming(obj: dict) -> None:
     """Upcoming events."""
     events: list[ElCairoEvent] = shows_functions.query(
-        cursor=obj["cursor"],
         date_int_min=shows_functions.day_start(arrow.now()),
         date_int_max=sys.maxsize,
         order=obj["order"],

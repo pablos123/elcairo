@@ -1,6 +1,5 @@
 """Functions used in the shows command."""
 
-import sqlite3
 from pathlib import Path
 
 import arrow
@@ -8,6 +7,7 @@ import click
 
 from elcairo.api.elcairo import ElCairoEvent, ElCairoExtraInfo
 from elcairo.commands.lib.events_printer import ElCairoEventsPrinter
+from elcairo.models import EventModel, db
 
 
 def create_elcairo_event(row: dict) -> ElCairoEvent:
@@ -32,26 +32,44 @@ def create_elcairo_event(row: dict) -> ElCairoEvent:
     )
 
 
-def query(
-    cursor: sqlite3.Cursor, date_int_min: int, date_int_max: int, order: str
-) -> list[ElCairoEvent]:
+def query(date_int_min: int, date_int_max: int, order: str) -> list[ElCairoEvent]:
     """Execute query."""
-    events: list[ElCairoEvent] = []
     try:
-        res: sqlite3.Cursor = cursor.execute(
-            "SELECT * FROM events WHERE compare_date >= ? AND compare_date <= ? ORDER BY compare_date "
-            + order,
-            (date_int_min, date_int_max),
+        order_field = EventModel.compare_date.asc() if order == "ASC" else EventModel.compare_date.desc()
+        rows = (
+            EventModel
+            .select()
+            .where(
+                EventModel.compare_date >= date_int_min,
+                EventModel.compare_date <= date_int_max,
+            )
+            .order_by(order_field)
         )
-        events = [create_elcairo_event(dict(row)) for row in res.fetchall()]
-    except sqlite3.OperationalError:
-        pass
+        return [
+            create_elcairo_event({
+                "name": row.name,
+                "date": row.date,
+                "synopsis": row.synopsis,
+                "cost": row.cost,
+                "image_url": row.image_url,
+                "image_path": row.image_path,
+                "url": row.url,
+                "direction": row.direction,
+                "cast": row.cast,
+                "genre": row.genre,
+                "duration": row.duration,
+                "origin": row.origin,
+                "year": row.year,
+                "age": row.age,
+            })
+            for row in rows
+        ]
+    except Exception:
+        return []
 
-    return events
 
-
-def cursor_init(obj: dict) -> None:
-    """Initialize the cursor and the printer."""
+def db_init(obj: dict) -> None:
+    """Initialize the database connection."""
     script_dir: Path = Path(__file__).parent.resolve()
     database_file: Path = script_dir / ".." / "elcairo.db"
 
@@ -59,11 +77,9 @@ def cursor_init(obj: dict) -> None:
         click.echo("Create the database first!")
         raise click.exceptions.Exit(1)
 
-    connection = sqlite3.connect(database_file)
-    click.get_current_context().with_resource(connection)
-
-    connection.row_factory = sqlite3.Row
-    obj["cursor"] = connection.cursor()
+    db.init(database_file)
+    db.connect()
+    click.get_current_context().call_on_close(db.close)
 
 
 def printer_init(obj: dict) -> None:
