@@ -55,10 +55,9 @@ def _kitty_render(image_path: str) -> None:
     """Render image inline with kitty, pre-scaled to WIDTH columns."""
     temporal_img = Path("/tmp/elcairo_tmp_kitty.png")
 
-    convert = subprocess.Popen(
+    subprocess.run(
         ["convert", image_path, "-resize", f"{WIDTH * 10}x", str(temporal_img)]
     )
-    convert.wait()
 
     subprocess.run(["kitty", "+kitten", "icat", str(temporal_img)])
 
