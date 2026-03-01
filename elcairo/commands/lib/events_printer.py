@@ -3,7 +3,6 @@
 import os
 import shutil
 import subprocess
-from pathlib import Path
 
 import arrow
 import click
@@ -15,69 +14,32 @@ from elcairo.api.elcairo import ElCairoEvent
 DEFAULT = "[Nothing to show...]"
 WIDTH = 120
 
-RENDERERS: dict[str, list[str]] = {
-    "wezterm": ["wezterm", "imgcat", "--width", "{width}", "{path}"],
-    "iterm2": ["imgcat", "{path}"],
-    "chafa": ["chafa", "--size={width}x", "{path}"],
-    "timg": ["timg", "-g{width}x", "{path}"],
-    "viu": ["viu", "-w", "{width}", "{path}"],
-    "catimg": ["catimg", "-w", "{width}", "{path}"],
-    "img2txt": ["img2txt", "--width={width}", "{path}"],
-    "pixterm": ["pixterm", "{path}"],
-    "jp2a": ["jp2a", "--width={width}", "{path}"],
+RENDERERS: dict[str, str] = {
+    "wezterm": "wezterm imgcat --width '{width}' '{path}'",
+    "chafa": "chafa --size='{width}x' '{path}'",
+    "catimg": "catimg -w '{width}' '{path}'",
+    "jp2a": "jp2a --width='{width}' '{path}'",
 }
 
 
-def _detect_renderer(forced: str | None) -> str | None:
-    """Return the renderer to use: forced override, then env-based, then PATH."""
-    if forced is not None:
-        return forced
-
-    if os.getenv("KITTY_WINDOW_ID") or os.getenv("TERM") == "xterm-kitty":
-        return "kitty"
-
+def detect_renderer() -> str:
+    """Return the renderer to use: first env-based, then PATH."""
     term_program = os.getenv("TERM_PROGRAM", "")
     if term_program == "WezTerm":
         return "wezterm"
-    if term_program == "iTerm.app":
-        return "iterm2"
-    if term_program == "ghostty" or os.getenv("TERM") == "xterm-ghostty":
-        return "kitty"
 
-    for name in ("chafa", "timg", "viu", "catimg", "img2txt", "pixterm", "jp2a"):
+    for name in ("chafa", "catimg", "jp2a"):
         if shutil.which(name):
             return name
 
-    return None
+    return "builtin"
 
 
-def _kitty_render(image_path: str) -> None:
-    """Render image inline with kitty, pre-scaled to WIDTH columns."""
-    temporal_img = Path("/tmp/elcairo_tmp_kitty.png")
-
-    subprocess.run(
-        ["convert", image_path, "-resize", f"{WIDTH * 10}x", str(temporal_img)]
-    )
-
-    subprocess.run(["kitty", "+kitten", "icat", str(temporal_img)])
-
-
-def _run_renderer(renderer: str, image_path: str) -> None:
-    """Build and execute the renderer command."""
-    if renderer == "kitty":
-        _kitty_render(image_path)
-        return
-
-    template = RENDERERS[renderer]
-    cmd = [part.format(path=image_path, width=str(WIDTH)) for part in template]
-    subprocess.run(cmd)
-
-
-def _builtin_ascii_render(image_path: str) -> None:
+def builtin_ascii_render(image_path: str) -> None:
     """Render an image as ASCII art using Pillow. Always available as fallback."""
 
     # ASCII density ramp: darkest → lightest
-    RAMP = " .`-_':,;^=+/\"|)\\<>)iv%xclrs{*}I?!][1taeo7zjLunT#JCwfy325Fp6mqSUZ8g4d9bKhE0X&WB@M"
+    ramp = " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
 
     try:
         img = Image.open(image_path).convert("RGB")
@@ -97,7 +59,7 @@ def _builtin_ascii_render(image_path: str) -> None:
         row = ""
         for x in range(char_width):
             pixel = gray.getpixel((x, y))
-            row += RAMP[int(pixel / 255 * (len(RAMP) - 1))]
+            row += ramp[int(pixel / 255 * (len(ramp) - 1))]
         click.echo(row)
 
 
@@ -300,14 +262,19 @@ class ElCairoEventsPrinter:
     def echo_image(self, event: ElCairoEvent) -> None:
         """Echo an image using the best available renderer."""
 
-        image_path: str = event.image_path or DEFAULT
-        renderer = _detect_renderer(self.image_renderer)
+        if not event.image_path:
+            return click.echo(f"{DEFAULT}")
 
-        if renderer is None or renderer == "builtin":
-            _builtin_ascii_render(image_path)
+        image_path: str = event.image_path
+        renderer = self.image_renderer or detect_renderer()
+
+        if renderer == "builtin":
+            builtin_ascii_render(image_path)
             return
 
-        _run_renderer(renderer, image_path)
+        width = WIDTH * 2 if renderer == "catimg" else WIDTH
+
+        subprocess.run(RENDERERS[renderer].format(width=width, path=image_path).split())
 
     @staticmethod
     def echo_image_url(event: ElCairoEvent) -> None:
