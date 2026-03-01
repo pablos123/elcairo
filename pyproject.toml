@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elcairo"
-version = "2.02"
+version = "2.03"
 requires-python = ">=3.10"
 dependencies = [
   "icalendar",
