@@ -65,7 +65,7 @@ def populate(obj: dict) -> None:
 
     if not silent:
         spinner.succeed()
-        spinner.start(f"Connecting to the new database ({database_file})")
+        spinner.start(f"Connecting to the database ({database_file})")
 
     db.init(database_file)
     db.connect()
@@ -89,30 +89,36 @@ def populate(obj: dict) -> None:
 
     data_insert: list[dict] = []
     for event_uid, elcairo_event in events_dict.items():
-        data_insert.append({
-            "uid": event_uid,
-            "name": elcairo_event.name,
-            "date": str(arrow.get(elcairo_event.date)),
-            "compare_date": int(arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")),
-            "synopsis": elcairo_event.synopsis,
-            "direction": elcairo_event.extra_info.direction,
-            "cast": elcairo_event.extra_info.cast,
-            "genre": elcairo_event.extra_info.genre,
-            "duration": elcairo_event.extra_info.duration,
-            "origin": elcairo_event.extra_info.origin,
-            "year": elcairo_event.extra_info.year,
-            "age": elcairo_event.extra_info.age,
-            "cost": elcairo_event.cost,
-            "image_path": download_image(elcairo_event.image_url, event_uid, script_dir),
-            "image_url": elcairo_event.image_url,
-            "url": elcairo_event.url,
-        })
+        data_insert.append(
+            {
+                "uid": event_uid,
+                "name": elcairo_event.name,
+                "date": str(arrow.get(elcairo_event.date)),
+                "compare_date": int(
+                    arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")
+                ),
+                "synopsis": elcairo_event.synopsis,
+                "direction": elcairo_event.extra_info.direction,
+                "cast": elcairo_event.extra_info.cast,
+                "genre": elcairo_event.extra_info.genre,
+                "duration": elcairo_event.extra_info.duration,
+                "origin": elcairo_event.extra_info.origin,
+                "year": elcairo_event.extra_info.year,
+                "age": elcairo_event.extra_info.age,
+                "cost": elcairo_event.cost,
+                "image_path": download_image(
+                    elcairo_event.image_url, event_uid, script_dir
+                ),
+                "image_url": elcairo_event.image_url,
+                "url": elcairo_event.url,
+            }
+        )
 
     if not silent:
         spinner.succeed()
         spinner.start("Populating the table")
 
-    EventModel.insert_many(data_insert).on_conflict('replace').execute()
+    EventModel.insert_many(data_insert).on_conflict("replace").execute()
     db.close()
 
     if not silent:
