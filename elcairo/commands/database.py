@@ -5,7 +5,6 @@ from pathlib import Path
 
 import arrow
 import click
-import icalendar
 import requests
 from halo import Halo
 
@@ -41,26 +40,10 @@ def database(obj: dict, silent: bool) -> None:
 
 
 @database.command()
-@click.option(
-    "-i",
-    "--ics-file",
-    help="Read from a .ics instead of calling the API."
-    " (Just for testing .ics files. This will not populate the DB.)",
-    type=click.Path(exists=True),
-    required=False,
-)
 @click.pass_obj
-def populate(obj: dict, ics_file: click.Path) -> None:
+def populate(obj: dict) -> None:
     """Populate the database."""
     silent: bool = obj["silent"]
-
-    if ics_file:
-        if not silent:
-            click.echo(f"Reading .ics file {ics_file}...")
-        with Path(ics_file).open() as file:
-            calendar_text: str = file.read()
-            icalendar.Calendar.from_ical(calendar_text)
-        raise click.exceptions.Exit(0)
 
     script_dir: Path = Path(__file__).parent.resolve()
     lock_file: Path = script_dir / "db_lock_file"
@@ -75,15 +58,10 @@ def populate(obj: dict, ics_file: click.Path) -> None:
 
     lock_file.touch()
 
-    if not silent:
-        spinner.succeed()
-        spinner.start("Removing old database")
-
     image_dir: Path = script_dir / "images"
     image_dir.mkdir(exist_ok=True)
 
     database_file: Path = script_dir / "elcairo.db"
-    database_file.unlink(missing_ok=True)
 
     if not silent:
         spinner.succeed()
@@ -96,7 +74,7 @@ def populate(obj: dict, ics_file: click.Path) -> None:
         spinner.succeed()
         spinner.start("Creating table")
 
-    db.create_tables([EventModel])
+    db.create_tables([EventModel], safe=True)
 
     if not silent:
         spinner.succeed()
@@ -112,6 +90,7 @@ def populate(obj: dict, ics_file: click.Path) -> None:
     data_insert: list[dict] = []
     for event_uid, elcairo_event in events_dict.items():
         data_insert.append({
+            "uid": event_uid,
             "name": elcairo_event.name,
             "date": str(arrow.get(elcairo_event.date)),
             "compare_date": int(arrow.get(elcairo_event.date).format("YYYYMMDDHHmm")),
@@ -133,7 +112,7 @@ def populate(obj: dict, ics_file: click.Path) -> None:
         spinner.succeed()
         spinner.start("Populating the table")
 
-    EventModel.insert_many(data_insert).execute()
+    EventModel.insert_many(data_insert).on_conflict('replace').execute()
     db.close()
 
     if not silent:

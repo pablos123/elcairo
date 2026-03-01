@@ -9,6 +9,7 @@ class EventModel(Model):
     """Events table."""
 
     event_id = AutoField()
+    uid = TextField(unique=True)
     name = TextField()
     date = TextField()
     compare_date = IntegerField()
