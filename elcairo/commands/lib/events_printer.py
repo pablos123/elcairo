@@ -268,6 +268,10 @@ class ElCairoEventsPrinter:
         image_path: str = event.image_path
         renderer = self.image_renderer or detect_renderer()
 
+        if renderer == "wezterm" and os.getenv("TERM_PROGRAM") != "WezTerm":
+            click.echo("Image renderer 'wezterm' requires a WezTerm terminal.")
+            return
+
         if renderer == "builtin":
             builtin_ascii_render(image_path)
             return
@@ -276,7 +280,10 @@ class ElCairoEventsPrinter:
 
         cmd_list = RENDERERS[renderer].format(width=width).split()
         cmd_list.append(image_path)
-        subprocess.run(cmd_list)
+        try:
+            subprocess.run(cmd_list)
+        except FileNotFoundError:
+            click.echo(f"Image renderer '{renderer}' not found.")
 
     @staticmethod
     def echo_image_url(event: ElCairoEvent) -> None:
