@@ -56,7 +56,7 @@ from elcairo.api.elcairo import ElCairoEvent
     "-R",
     "--image-renderer",
     type=click.Choice(
-        ["kitty", "wezterm", "iterm2", "chafa", "timg", "viu", "catimg", "img2txt", "pixterm", "jp2a", "builtin"],
+        ["wezterm", "chafa", "catimg", "jp2a", "builtin"],
         case_sensitive=False,
     ),
     default=None,
